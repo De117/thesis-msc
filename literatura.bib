@@ -1,20 +1,154 @@
-@manual{oetiket2007lshort,
-    author = {Oetiket, T. and Partl, H. and Hyna and Schlegl, E.},
-    title = {The not-so-short introduction to Latex},
-    url = {http://www.ctan.org/tex-archive/info/lshort/english/lshort.pdf}
+@inproceedings{paper_FDTC2018,
+    author = {A. Maldini and N. Samwel and S.Picek and L. Batina},
+    title  = {Genetic Algorithm-based Electromagnetic Fault Injection},
+    year   = {2018},
 }
 
-@Manual{downes2002shortams,
-  title = 	 {{Short Math Guide for \LaTeX{}}},
-  author = 	 {Downes,, Michael},
-  organization = {American Mathematical Society},
-  year = 	 {2002},
-  url = 	 {ftp://ftp.ams.org/pub/tex/doc/amsmath/short-math-guide.pdf}
+@InProceedings{GlitchItIfYouCan,
+	author="Carpi, Rafael Boix
+	and Picek, Stjepan
+	and Batina, Lejla
+	and Menarini, Federico
+	and Jakobovic, Domagoj
+	and Golub, Marin",
+	editor="Francillon, Aur{\'e}lien
+	and Rohatgi, Pankaj",
+	title="Glitch It If You Can: Parameter Search Strategies for Successful Fault Injection",
+	booktitle="Smart Card Research and Advanced Applications",
+	year="2014",
+	publisher="Springer International Publishing",
+	address="Cham",
+	pages="236--252"
 }
 
-@Book{ungar2002uvod,
-  author = 	 {Šime Ungar},
-  title = 	 {{Uvod u \TeX{} s naglaskom na \LaTeX 2$\epsilon$}},
-  publisher = 	 {Odjel za matematiku, Sveučilište J.J.\ Strossmayera u Osijeku},
-  year = 	 {2002}
+@InProceedings{FI_memetic,
+	author={Picek, Stjepan and Batina, Lejla and Buzing, Pieter and Jakobovic, Domagoj},
+	editor={Mangard, Stefan and Poschmann, Axel Y.},
+	title={Fault Injection with a New Flavor: Memetic Algorithms Make a Difference},
+	booktitle={Constructive Side-Channel Analysis and Secure Design},
+	year={2015},
+	publisher={Springer International Publishing},
+	address={Cham},
+	pages={159--173}
 }
+
+@misc{keccak_reference,
+  author = {G. Bertoni and J. Daemen and M. Peeters and G. Van Assche},
+  title  = {The {Keccak} reference},
+  month  = {January},
+  year   = {2011},
+  note   = {\url{http://keccak.noekeon.org/}},
+  url    = {http://keccak.noekeon.org/Keccak-reference-3.0.pdf},
+}
+
+@misc{merkle-damgard_reference,
+    author = {TODO},
+    title  = {TODO},
+}
+
+@misc{SHAttered,
+    author = {TODO},
+    title  = {TODO},
+}
+
+@misc{WolfSSL,
+    title = {WolfSSL},
+    note  = {an embedded SSL/TLS library},
+    url   = {https://www.wolfssl.com/},
+}
+
+@manual{RiscureVCGmanual,
+    author= {Riscure},
+    title = {VCGlitcher SDK 2.7 reference},
+    date  = {Apr 12, 2017},
+}
+
+@misc{precise_probe_tips,
+    author = {TODO},
+    title  = {TODO},
+}
+
+@inproceedings{ordas2015injection,
+  title={{EM} injection: Fault model and locality},
+  author={Ordas, S{\'e}bastien and Guillaume-Sage, Ludovic and Maurine, Philippe},
+  booktitle={Fault Diagnosis and Tolerance in Cryptography (FDTC), 2015 Workshop on},
+  pages={3--13},
+  year={2015},
+  organization={IEEE}
+}
+
+@inproceedings{madau2017fault,
+  title={An {EM} Fault Injection Susceptibility Criterion and Its Application to the Localization of Hotspots},
+  author={Madau, Maxime and Agoyan, Michel and Maurine, Philippe},
+  booktitle={International Conference on Smart Card Research and Advanced Applications},
+  pages={180--195},
+  year={2017},
+  organization={Springer}
+}
+
+@article{luo2018algebraic,
+  title={Algebraic Fault Analysis of {SHA-3} under Relaxed Fault Models},
+  author={Luo, Pei and Athanasiou, Konstantinos and Fei, Yunsi and Wahl, Thomas},
+  journal={IEEE Transactions on Information Forensics and Security},
+  year={2018},
+  publisher={IEEE}
+}
+
+
+%
+% === 5 references for what's been done on fault injection ===
+%
+
+@inproceedings{Kommerling,
+ author = {K\"{o}mmerling, Oliver and Kuhn, Markus G.},
+ title = {Design principles for tamper-resistant smartcard processors},
+ booktitle = {Proceedings of the USENIX Workshop on Smartcard Technology on USENIX Workshop on Smartcard Technology},
+ year = {1999},
+ pages = {2--2},
+ publisher = {USENIX Association},
+ address = {Berkeley, CA, USA},
+}
+
+@InProceedings{boneh_demillo_lipton,
+	author={Boneh, Dan and DeMillo, Richard A. and Lipton, Richard J.},
+	editor={Fumy, Walter},
+	title={On the Importance of Checking Cryptographic Protocols for Faults},
+	booktitle={Advances in Cryptology --- EUROCRYPT '97},
+	year={1997},
+	publisher={Springer Berlin Heidelberg},
+	address={Berlin, Heidelberg},
+	pages={37--51},
+	abstract={We present a theoretical model for breaking various cryptographic schemes by taking advantage of random hardware faults. We show how to attack certain implementations of RSA and Rabin signatures. We also show how various authentication protocols, such as Fiat-Shamir and Schnorr, can be broken using hardware faults.},
+	isbn={978-3-540-69053-5}
+}
+
+@InProceedings{nsamwel_africacrypt,
+	author={Samwel, Niels and Batina, Lejla},
+	editor={Joux, Antoine and Nitaj, Abderrahmane and Rachidi, Tajjeeddine},
+	title={Practical Fault Injection on Deterministic Signatures: The Case of EdDSA},
+	booktitle={Progress in Cryptology -- AFRICACRYPT 2018},
+	year={2018},
+	publisher={Springer International Publishing},
+	address={Cham},
+	pages={306--321}
+}
+
+@misc{impeccable_circuits,
+	author = {Anita Aghaie and Amir Moradi and Shahram Rasoolzadeh and Falk Schellenberg and Tobias Schneider},
+	title = {Impeccable Circuits},
+	howpublished = {Cryptology ePrint Archive, Report 2018/203},
+	year = {2018},
+	note = {\url{https://eprint.iacr.org/2018/203}},
+}
+
+@misc{FI_crowbars,
+	author = {Colin O'Flynn},
+	title = {Fault Injection using Crowbars on Embedded Systems},
+	howpublished = {Cryptology ePrint Archive, Report 2016/810},
+	year = {2016},
+	note = {\url{https://eprint.iacr.org/2016/810}},
+}
+
+%
+% ============================================================
+%
