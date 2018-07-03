@@ -1,7 +1,11 @@
 \documentclass[times, utf8, diplomski]{fer}
 \usepackage{booktabs}
-\usepackage{algorithmic, algorithm2e}    % for algorithm
+\usepackage{algorithmic}    % for algorithm
+\usepackage[ruled]{algorithm2e}
 \usepackage{fontspec}   % works with xelatex: for non-ASCII characters
+\usepackage{siunitx}
+\usepackage{graphicx}
+\usepackage{subcaption}
 
 \begin{document}
 
@@ -199,10 +203,11 @@ their coverage ratio -- the share of preserved faulty points -- dependent on $\a
 However, note that by \emph{fault}, they mean \emph{any} perturbation of the
 normal behavior of the algorithm.
 
-\begin{figure}[htb]\label{fig:emfisc}
+\begin{figure}[htb]
     \centering
-    %\includegraphics{images/emfisc.png}
+    \includegraphics{images/emfisc.png}
     \caption{coverage ratio vs. $\alpha$ for EMFISC}
+    \label{fig:emfisc}
 \end{figure}
 
 
@@ -242,10 +247,12 @@ In order to understand what was done and how, several things must be understood
 first. These are:
 \begin{enumerate}
     \item genetic algorithms, used here for optimization
-    \item fault injection in general
+    \item fault injection (FI) in general
     \item the SHA-3 hash function, which is exploited here using algebraic fault analysis
     \item algebraic fault analysis (AFA), which is used in conducting a real attack
 \end{enumerate}
+
+SHA-3 and AFA are exposed first, so as to not interrupt the exposition of FI.
 
 
 \section{SHA-3/Keccak}\label{sec:keccak}
@@ -264,7 +271,7 @@ a small hash function itself, but one with fixed-length input and output, which
 the Merkle-Damgård construction uses to build a "big" hash function, with
 arbitrary-length input. It can be proven that the "big" hash function will
 be collision-resistant if and only if the compression function is
-collision-resistant~\cite{}.
+collision-resistant~\cite{TODO}.
 
 \begin{figure}[htb]\label{fig:merkle-damgard}
     \centering
@@ -282,11 +289,13 @@ as well as arbitrary-length input.
 This is nicely illustrated in figure \ref{fig:sponge}.
 
 %TODO: redo sponge description?
+%TODO: take out sponge.png in better quality?
 
-\begin{figure}[htb]\label{fig:sponge}
+\begin{figure}[htb]
     \centering
-    %\includegraphics{images/sponge.png}
+    \includegraphics{images/sponge.png}
     \caption{the sponge construction}
+    \label{fig:sponge}
 \end{figure}
 
 Another way to put it would be this: the Merkle-Damgård construction has a
@@ -334,10 +343,11 @@ omitted indices, e.g. $A_{(x,z)}$ refers to the column of bits having coordinate
 of the form $(x,\ast,z)$. Figure \ref{fig:keccak_state} shows the notation used
 for different parts of the state.
 
-\begin{figure}[htb]\label{fig:keccak_state}
+\begin{figure}[htb]
     \centering
-    %\includegraphics{images/keccak_state.png}
+    \includegraphics{images/keccak_state.png}
     \caption{notation for parts of the state array}
+    \label{fig:keccak_state}
 \end{figure}
 
 The permutation is an iterated one, consisting of 24 rounds of $R$, where
@@ -509,10 +519,10 @@ timing.)
 In the case that the board gets stuck in an illegal state after a glitch, it
 needs to be reset. The only reliable way to reset this particular board is by
 cutting its power, which can take a significant fraction of a second, depending
-on the capacitors. A pause of 100ms was used for this.
+on the capacitors. A pause of \SI{100}{\milli\second} was used for this.
 
-The physical dimensions of the chip package are $24 \times 24$ $mm$.
-Repositioning error of the $XYZ$ table is 0.05 $mm$, which gives a spatial grid
+The physical dimensions of the chip package are $24 \times 24$\,\si{\milli\metre}
+Repositioning error of the $XYZ$ table is \SI{0.05}{\milli\metre}, which gives a spatial grid
 of at most $480 \times 480$. However, the limiting factor here is most likely
 the size of the probe tip (and its internal coil), which is much larger.
 
@@ -537,14 +547,14 @@ In the experiments conducted, only a subset of these are considered:
   \item[glitch intensity] -- regulates the voltage of the pulse. The SDK manual
         suggests that it is a percentage of power used~\cite{RiscureVCGmanual},
         so it makes sense to map it to real values in $[0,1]$.
-  \item[time offset] -- between 367 and 375 $ms$, because that is where the
-        injection point must be, for the code we are running. The offset is
-        encoded as an integer value (number of 2 $ns$ ticks).
+  \item[time offset] -- between 367 and 375\,\si{\micro\second}, because that is
+        where the injection point must be, for the code we are running. The offset
+        is encoded as an integer value (number of \SI{2}{\nano\second} ticks).
   \item[number of repetitions of the pulse] -- a primitive form of pulse shape.
         This parameter is set to be in the (obviously, integral) range $[1, 10]$.
 \end{description}
 
-The pulse duration stays constant at a fixed value of 40ns. Similarly, the shape
+The pulse duration stays constant at a fixed value of \SI{40}{\nano\second} Similarly, the shape
 and angle of the probe tip is not varied, since changing those cannot be easily
 automated.
 
@@ -557,9 +567,9 @@ approach: an exhaustive search.
 
 The maximal spatial resolution, as I mentioned above, is $480 \times 480$ for
 this particular setup; a better setup would have an even higher one. For the
-time offset, the resolution is 2ns; for a reasonable range, I'll put the
-interval between 367 and 375 microseconds, since this was measured as the
-interval containing the fault injection point -- this gives us a total of
+time offset, the resolution is \SI{2}{\nano\second}; for a reasonable range,
+I'll put the interval between 367 and 375 microseconds, since this was measured
+as the interval containing the fault injection point -- this gives us a total of
 4\,000 different values; for the glitch intensity, there's really no good rule
 for determining the smallest meaningful increment, but a 1\% increment seems
 a fairly reasonable (if conservative) estimate based on visual estimates of
@@ -588,7 +598,7 @@ completely dishevel its operation and even potentially damage it. So, we should
 expect faulty behaviour to occur somewhere between those two extremes, i.e.,
 along the class border.
 
-Additionally, offset ranges (min to max offset) are set by the user,
+Additionally, offset ranges (min. to max. offset) are set by the user,
 based on a rough expectation of the duration of the cryptographic algorithm.
 
 Usually, the objective function guides the optimization algorithm towards better
@@ -608,12 +618,12 @@ The requirements for this optimization algorithm are:
 \end{description}
 
 These two requirements somewhat conflict with each other. Because most of the
-parameter space is useless (i.e., has no faults), covering enough space to be
+parameter space is useless (i.e. has no faults), covering enough space to be
 reasonably secure we did not miss anything important means potentially wasting
 a lot of measurements.
 
 Next, the terminology used when discussing the search and possible outputs of the algorithm.
-A point is a distinct set of parameters, i.e., a point in the parameter space.
+A point is a distinct set of parameters, i.e. a point in the parameter space.
 A measurement is the result of a single attempt at glitching the target with those parameters.
 
 Each point is measured five times, since trying the same parameters multiple
@@ -622,7 +632,7 @@ times does not necessarily always yield the same response.
 When counting the faulty measurements, we distinguish between:
 \begin{enumerate}
     \item the total number of faulty measurements,
-    \item the number of distinct faulty responses (i.e., ``unique faulty measurements'').
+    \item the number of distinct faulty responses (i.e. ``unique faulty measurements'').
 \end{enumerate}
 
 The difference is that if a measurement results in a before-seen faulty output,
@@ -663,9 +673,9 @@ When considering EM fault injection, the probe tip has to physically move to
 a different point. To do this with sufficient precision requires a non-negligible
 amount of time -- the exact amount varies depending on the setup, but it can be
 up to several seconds per measurement. In comparison, a reset requires just a
-fraction of a second (for this board, $\approx100$ms to do it reliably). The
-measurement part itself is even faster -- 30ms or less. Thus, the order in which
-points are evaluated matters.
+fraction of a second (for this board, $\approx$\SI{100}{\milli\second} to do it
+reliably). The measurement part itself is even faster -- \SI{30}{\milli\second}
+or less. Thus, the order in which points are evaluated matters.
 
 Even with an optimal routing for any batch of $N$ points, splitting the
 evaluation into more batches means more time wasted. For population-based
@@ -720,9 +730,42 @@ In any case, the emulator will be intrinsically limited due to being bound to
 actual data.
 
 
-\section{Algorithm}
+\section{Algorithms}
 
 TODO: write up the algorithms used, adapt the main GA writeup
+
+Several algorithms were tried out; most of them GA-based.
+For the baseline, a simple random search was used.
+
+Note: some of the early scans and tests were done not on the Piñata running
+SHA3-512, but Piñata running EdDSA (also taken from WolfSSL). There exists a
+difference between their respective search spaces: the parameters and the
+parameter ranges are largely the same (there is a difference in the offset
+range, since EdDSA takes $\approx$\SI{30}{\milli\second} to run, but SHA3-512
+only $\approx$\SI{0.4}{\milli\second}), but underlying calculation and the
+"look" of the parameter space is different. In EdDSA, the vast majority of
+the time is spent performing a scalar multiplication on the Ed25519 curve,
+and the parameter space has one big blob of RESETs, the rest being filled
+by NORMALs. For SHA3-512, all the time is spent on the Keccak-$f$
+transformation, and the parameter space has not only the (substantially smaller)
+blob of RESETs, but also several blobs composed of mostly CHANGING points, with
+a number of RESETs and SUCCESSes. Figure \ref{fig:parameter_spaces} shows what
+the parameter space looks like for both of these.
+
+CHANGING points (and some other features) were not present from the start;
+they were implemented just before switching to SHA3, hence most scans on EdDSA
+don't have them. The process of selecting the algorithm and its hyperparameters
+was not a systematic one with extensive tuning, but a pragmatic one of choosing
+the most promising options within the timeframe.
+
+\begin{figure}[htbp]
+    \centering
+    %\includegraphics{images/parameter_spaces.png}
+    \caption{parameter space, for EdDSA and SHA3-512}
+    \label{fig:parameter_spaces}
+\end{figure}
+
+
 
 %Despite the fact that we use genetic algorithms like some previous
 %works~\cite{10.1007/978-3-319-08302-5_16, 10.1007/978-3-319-21476-4_11},
@@ -750,73 +793,307 @@ TODO: write up the algorithms used, adapt the main GA writeup
 %%For example, 4 NORMAL and 1 RESET point give fitness 5.3, which is higher than the fitness of a RESET point (with all 5 RESET measurements). Similarly, 4 SUCCESS and 1 RESET point give fitness 9.3, which is lower than the fitness of SUCCESS point (with all 5 SUCCESS measurements).
 %
 %
+
+\section{Random search}
+For the baseline, a simple random search was performed: generate $N$ points,
+then proceed to scan said points.
+
+\section{Simple GA}
+First, a simple genetic algorithm was tried out, with a single elite individual.
+Several selection algorithms were used: roulette-wheel selection, 3-tournament
+selection, and a variation on roulette-wheel selection with class awareness.
+This last one was inspired by the work in~\cite{Picek?}; its pseudocode is given below:
+\begin{algorithm}
+    \algsetup{linenosize=\tiny}
+    \small
+    \begin{algorithmic}[1]
+    \STATE $N \gets \text{length}(population)$
+    \STATE $elite\ size \gets 1$
+    \STATE $population_{new} \gets \varnothing$
+    \FOR {i in range($N - elite\ size$)}
+        \STATE $parent_1  \gets$ random choice ($population$)
+        \IF { there exist individuals $\notin$ class ($parent_1$)}
+            \STATE $parent_2 \gets$ random choice (other classes)
+        \ELSE
+            \STATE $parent_2$ $\gets$ random choice ($population \setminus \{parent_1\}$)
+        \ENDIF
+        \STATE $child \gets$ classaware crossover ($parent_1$, $parent_2$)
+        \STATE $child \gets$ mutate ($child$)
+        \STATE $population_{new} \gets population_{new} \cup \{child\} $
+    \ENDFOR
+    \end{algorithmic}
+    \caption{pseudocode for the class-aware roulette-wheel selection}
+\end{algorithm}
+
+The class-aware crossover here simply returns a point halfway between the parents,
+if the parents are from different classes; otherwise it acts as a normal crossover.
+The idea behind this is simple: after finding a RESET, use it to locate the class
+border area, and concentrate there.
+
+Of the selections, roulette-wheel selection was chosen for further testing.
+As it turns out, the class-aware selection did find a part of the class border
+area very fast, and converge there; however this was only a very small part of
+the border, and the algorithm is not able to "recover" from this convergence,
+but it will instead stay on the same small area, nor mapping out the rest of
+the space.
+3-tournament selection was not chosen, since it appeared to be too aggressive,
+i.e. it exerted overly high selection pressure for the problem at hand.
+It works by randomly choosing individuals three at a time, in "tournaments".
+The lowest-ranking of the three is discarded, and the other two are used as
+parents. The tournaments are held until enough children have been produced.
+
+
+The "normal" crossover, however, is not a standard GA crossover, but different.
+Its pseudocode is given below in \ref{algo:custom_crossover}.
+
+\begin{algorithm}
+    \algsetup{linenosize=\tiny}
+    \small
+    \begin{algorithmic}[1]
+    \STATE Input: $parent_1, parent_2$, two chromosomes, each a list of FI parameters
+    \STATE Output: $child$, the resulting child
+    \FOR {each parameter $p$ in range($N - elite\ size$)}
+        \STATE $child.p \gets $ random value in interval $[parent_1.p, parent_2.p]$)
+    \ENDFOR
+    \RETURN $child$
+    \end{algorithmic}
+    \caption{pseudocode for custom GA crossover}
+    \label{algo:custom_crossover}
+\end{algorithm}
+
+For comparison, the standard single-cut crossover is given as algorithm \ref{algo:standard_crossover};
+the uniform crossover is not much different.
+In terms of behaviour, it would be best to consider the geometric interpretation.
+A vector of $k$ parameters can be viewed as a point in $k$-dimensional space.
+Two such points -- the parents -- define an axis-aligned $k$-dimensional hypercube.
+The "normal" crossover calculates the child as a random point from within
+that hypercube; the standard crossovers, in contrast, calculate the child as
+one of the corners of the hypercube. If the child has $l$ parameters of parent$_1$,
+it will be at a Hamming\footnotemark distance of $k-l$ from parent$_1$, and $l$
+from parent$_2$.
+
+\footnotetext{
+    \emph{Hamming distance} might not be the technically correct term here,
+    but it is easy to see the 1-to-1 correspondence between the edges of \emph{this}
+    $k$-dimensional hypercube and the set $\{0,1\}^k$ of length-$k$ bitstrings:
+    strings are corners, edges are bitflips.
+}
+
+
+\begin{algorithm}
+    \algsetup{linenosize=\tiny}
+    \small
+    \begin{algorithmic}[1]
+        \STATE \textbf{Input:} $parent_1, parent_2$, two chromosomes, each a list of FI parameters
+        \STATE \textbf{Output:} $child$, the resulting child
+        \FOR {each parameter $p$ in range($N - elite\ size$)}
+            \STATE $child.p \gets $ random choice ($parent_1.p$, $parent_2.p$)
+        \ENDFOR
+        \RETURN $child$
+    \end{algorithmic}
+    \caption{pseudocode for standard GA crossover}
+    \label{algo:standard_crossover}
+\end{algorithm}
+
+
+
+As for the mutation, its task is to ensure adequate exploration of the search
+space. Its exact form shouldn't make a great difference for the successfulness
+of the algorithm, as long as the final algorithm doesn't have any "blind spots",
+i.e. it doesn't leave some parts of the search space unreachable by the algorithm.
+The mutation I used for this algorithm is given below as algorithm \ref{algo:mutation}:
+
+\begin{algorithm}[hb]
+    \algsetup{linenosize=\tiny}
+    \small
+    \begin{algorithmic}[1]
+        \STATE \textbf{Input:} $p_{MUT}$, the mutation probability
+        \STATE \textbf{Input:} $Q$, an upper limit on the step size
+        \STATE \textbf{Input:} $individual$, a solution to mutate
+        \STATE \textbf{Output:} $individual'$, the mutant
+        \STATE $individual' \gets \text{copy}(individual)$
+        \FOR {each parameter $P$ except repetitions}
+            \STATE with probability $p$:
+            \STATE ~~~~$individual'.P \gets $ $individual.P + $ random choice from interval $[-\frac{Q}{2}, \frac{Q}{2}]$
+            \STATE clip value of $individual'.P$ to within allowed range
+        \ENDFOR
+        \STATE with probability $p$:
+        \STATE ~~~~$individual'.repetitions \gets $ random integer from the allowed range
+    \end{algorithmic}
+    \caption{pseudocode for mutation}
+    \label{algo:mutation}
+\end{algorithm}
+
+
+Its per-parameter nature makes the probability that at least \emph{some} mutation
+will happen larger. It also means that significant jumps will tend to be mostly
+axis-aligned. The effect is somewhat similar to having a traditional crossover:
+many points on perpendicular lines, seemingly radiating from a hotspot; however
+the effect is weaker than with a single-cut crossover and a standard mutation
+which twiddles all the parameters at once. See figure \ref{fig:weaker_effect}
+for a picture of this.
+
+\begin{figure*}[htp]
+    \vspace{-50pt}      % so the bottom caption doesn't cover the page number
+    \centering
+    \begin{subfigure}[b]{\textwidth}
+        \includegraphics[width=\textwidth]{images/mutation_crossover_effect_comparison_traditional.png}
+        \caption{single-cut crossover with a standard all-parameters-simultaneously mutation}
+    \end{subfigure}
+
+    \begin{subfigure}[b]{\textwidth}
+        \includegraphics[width=\textwidth]{images/mutation_crossover_effect_comparison_myalgo.png}
+        \caption{the custom within-hypercube crossover with a per-parameter mutation}
+    \end{subfigure}
+    \caption{A comparison of the effects of a per-parameter mutation with custom
+             crossover vs. all-parameter mutation with single-cut crossover. Both
+             runs have 50 generations of 50 units each.
+    }
+    \label{fig:weaker_effect}
+\end{figure*}
+
+
+\section{Extending the simple GA}
+Recall, the early scans did not have a CHANGING class, and the landscape consisted
+of blobs of RESETs in a sea of NORMALs. So, a second phase was added: a series of
+binary searches to find and map out the border.
+
+The initial GA phase, if it covered most of the search space, can serve to map
+out the general landscape. In the second phase, first a point deep within the
+RESET blob is found. Since there was only one major blob of RESETs, this was not
+difficult: it was implemented as finding the centroid of all RESET points seen
+so far. Having found the centroid, a number of seen NORMAL points are randomly
+chosen. Now, for each of those NORMAL points, we have a line connecting it to
+the RESET centroid. This line must at some point pass through border between
+the NORMAL and RESET classes, so a binary search is performed on that line in
+order to find it. With a maximal spatial resolution of $480 \times 480$, each
+binary search requires measuring at most 9 points.
+
+For each binary search, after the intersection of the line with the class border
+is found, a small local search is performed to map out that part of the border.
+(We consider the class border area to be of interest.)
+
+The third phase, which comes after the binary searches, is a separate local
+search phase. It consists of taking very promising points -- SUCCESSful ones --
+and doing a scan of their neighbourhoods. This phase is merely additional
+exploitation of already discovered points, for extra effect.
+
+
+In this early landscape, this three-phase algorithm makes a lot of sense.
+First, map out the general landscape; then map out the border and discover
+good points; then focus on exploiting what you have. In a situation where
+the overwhelming majority of the search space are not good points, the
+local searches make sense: they are necessary to exploit the little good
+points there are.
+
+Introducing local search also opens up the question of what should be considered
+"close", i.e. how big is the neighbourhood of a point? There seems to be no good
+answer to this question, or at least not one that could be convincingly justified
+over other ones. So, I used values that seemed about right, tweaking them a bit
+and looking at the results, as well as visually estimating by the size of
+landscape features. For lack of a better answer to "what is a neighbourhood of
+a point?", it is "an axis-aligned cube centered on the point, with edge length
+CUBE\_SIZE $=0.1$".
+
+Figure \ref{fig:three-phase-example} shows one such three-phase scan. The GA
+phase used 20 generations of 15 units, with $p_{MUT}=0.01$. The second-phase
+was 20 binary searches with 40 points scanned around the class border; the
+second-phase local searches had a neighbourhood cube of edge length $0.1$.
+The final phase was local searches around each SUCCESSful point, with cube
+size $0.02$. The effect of the second phase is visible in the shape of the
+point clouds.
+
+
+\begin{figure*}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{images/GA-binary-local.png}
+    \caption{An example of the three-phase (GA + binary search + local search)
+             algorithm.
+    }
+    \label{fig:three-phase-example}
+\end{figure*}
+
+
+; in the general case where there are multiple blobs
+of unknown size, number, and positioning with respect to each other, this
+becomes
+
 %\subsubsection{GA Phase}
-%Our algorithm begins with a genetic algorithm that runs for $N$ generations and has a population of $M$ individuals. 
+%Our algorithm begins with a genetic algorithm that runs for $N$ generations and has a population of $M$ individuals.
 %The initial population is selected uniformly at random within parameter ranges.
 %We aim to maximize the fitness value, which corresponds to having as much as possible SUCCESS points.
 %
-%The first phase of GA is selection and we use roulette wheel selection. There, the fitness function assigns a fitness to possible solutions or chromosomes. This fitness level is used to associate a probability of selection with each individual chromosome. Those individuals that have better fitness are also proportionally more likely to be selected.
-%We also use elitism where the elite size equals 1. This means that the best individual cannot be replaced by some other individual (e.g., mutated offspring). We also experimented with $3$-tournament selection as used  in~\cite{10.1007/978-3-319-08302-5_16,10.1007/978-3-319-21476-4_11} but we found it to be too restrictive, i.e., to promote too fast convergence resulting in obtaining solutions from only a small part of the search space.
+%The first phase of GA is selection and we use roulette wheel selection.
+%There, the fitness function assigns a fitness to possible solutions or chromosomes.
+%This fitness level is used to associate a probability of selection with each
+%individual chromosome. Those individuals that have better fitness are also
+%proportionally more likely to be selected. We also use elitism where the
+%elite size equals 1. This means that the best individual cannot be replaced
+%by some other individual (e.g., mutated offspring). We also experimented with
+%3-tournament selection as used  in~\cite{10.1007/978-3-319-08302-5_16,10.1007/978-3-319-21476-4_11}
+%but we found it to be too restrictive, i.e. to promote too fast convergence
+%resulting in obtaining solutions from only a small part of the search space.
 %
-%%\subsubsection{Binary search phase}
-%%One of our assumptions was that the objective function was not a ``golf-course'',
-%%i.e. that it has reasonably smooth transitions between classes. With this, we would
-%%expect to find one or more 'blobs' of RESETs, wrapped in a thin layer of JUSTRIGHTs
-%%and CHANGINGs, and the rest covered in NORMALs. Since this border area is where we
-%%want to focus, we first need to more precisely locate it and map it out.
+%\subsection{Binary search phase}
+%You'll recall that one of the initial assumptions was that the objective function
+%was not a "golf-course", i.e. that it has reasonably smooth transitions between
+%classes. With this, we would expect to find one or more 'blobs' of RESETs, wrapped
+%in a thin layer of JUSTRIGHTs and CHANGINGs, and the rest covered in NORMALs.
+%Since this border area is where we want to focus, we first need to more precisely
+%locate it and map it out.
+%
+%This phase is meant to do exactly that: for each such blob, pick a point somewhere
+%inside it (ideally its centroid), then randomly pick a number of NORMAL points
+%outside of it, and perform a binary search to detect where the line connecting
+%such a pair of points intersects the inter-class border.
 %%
-%%This phase does exactly that: for each such blob, it picks a point somewhere inside it
-%%(ideally its centroid). It then randomly picks a number of NORMAL points outside of it,
-%%and performs a binary search to detect where the line connecting such a pair of points
-%%intersects the inter-class border.
-%
-%After the selection phase, we run crossover. Note, this version of a crossover promotes explorability and it enables GA to traverse large parts of the search space.
-%The pseudocode for crossover is given below:
-%\begin{algorithm}
-%    \algsetup{linenosize=\tiny}
-%    \small
-%    \begin{algorithmic}[1]
-%        \FOR {$all \ parameters$}
-%        \STATE $child = uniformly \ random \ value \ in \ the \ range [parent1, parent 2]$
-%        \ENDFOR
-%    \end{algorithmic}
-%\end{algorithm}
-%
-%Finally, the last step is the mutation operator that works as follows:
-%\begin{algorithm}
-%    \algsetup{linenosize=\tiny}
-%    \small
-%    \begin{algorithmic}[1]
-%        \FOR {$param \ in \ [x, y, intensity]$}
-%        \STATE $random = random \ value$
-%        \IF{$random > p\_mutation$}
-%        \STATE $r = uniform \ random \ from \ interval \ [-0.5, 0.5]$
-%        \STATE $param = param + r$
-%        \ENDIF
-%        \ENDFOR
-%        \STATE $random = random \ value$
-%        \IF{$random > p\_mutation$}
-%        \STATE $r = uniform \ random \ from \ interval \ [-0.5, 0.5]$
-%        \STATE $offset <- offset + r * OFFSET_RANGE$
-%        \ENDIF
-%        \STATE $random = random \ value$
-%        \IF{$random > p\_mutation$}
-%        \STATE $repetitions = random \ integer \ from \ [1, 10]$
-%        \ENDIF
-%    \end{algorithmic}
-%\end{algorithm}
-%
-%The mutation rate $p\_mutation$ is set to 5\%.
-%In the case the parameter gets out of its ranges, it is clipped to the edges of its range.
-%
-%
-%\subsubsection{Local Search Phase}
-%After GA is done, we focus local search on the promising parts of the explored search space: the space around the intersection points (i.e., places where class values change), and the space around any faults we've already found.
-%We define the neighbourhood of a point as a cube centred in it, with edge length
-%equal to 0.02. By length of 0.02 in parameter space, we mean 2\% of the range of that parameter.
-%Parameters $x, y$, and intensity are all within the range $[0,1]$.
-%For offset, it's 2\% of OFFSET\_RANGE (which is OFFSET\_MAX - OFFSET\_MIN).
-%To determine the distance of values, we use the Euclidean distance.
+%%After the selection phase, we run crossover. Note, this version of a crossover promotes explorability and it enables GA to traverse large parts of the search space.
+%%The pseudocode for crossover is given below:
+%%\begin{algorithm}
+%%    \algsetup{linenosize=\tiny}
+%%    \small
+%%    \begin{algorithmic}[1]
+%%        \FOR {$all \ parameters$}
+%%        \STATE $child = uniformly \ random \ value \ in \ the \ range [parent1, parent 2]$
+%%        \ENDFOR
+%%    \end{algorithmic}
+%%\end{algorithm}
+%%
+%%Finally, the last step is the mutation operator that works as follows:
+%%\begin{algorithm}
+%%    \algsetup{linenosize=\tiny}
+%%    \small
+%%    \begin{algorithmic}[1]
+%%        \FOR {$param \ in \ [x, y, intensity]$}
+%%        \STATE $random = random \ value$
+%%        \IF{$random > p\_mutation$}
+%%        \STATE $r = uniform \ random \ from \ interval \ [-0.5, 0.5]$
+%%        \STATE $param = param + r$
+%%        \ENDIF
+%%        \ENDFOR
+%%        \STATE $random = random \ value$
+%%        \IF{$random > p\_mutation$}
+%%        \STATE $r = uniform \ random \ from \ interval \ [-0.5, 0.5]$
+%%        \STATE $offset <- offset + r * OFFSET_RANGE$
+%%        \ENDIF
+%%        \STATE $random = random \ value$
+%%        \IF{$random > p\_mutation$}
+%%        \STATE $repetitions = random \ integer \ from \ [1, 10]$
+%%        \ENDIF
+%%    \end{algorithmic}
+%%\end{algorithm}
+%%
+%%The mutation rate $p\_mutation$ is set to 5\%.
+%%In the case the parameter gets out of its ranges, it is clipped to the edges of its range.
+%%
+%%
+%%\subsubsection{Local Search Phase}
+%%After GA is done, we focus local search on the promising parts of the explored search space: the space around the intersection points (i.e. places where class values change), and the space around any faults we've already found.
+%%We define the neighbourhood of a point as a cube centred in it, with edge length
+%%equal to 0.02. By length of 0.02 in parameter space, we mean 2\% of the range of that parameter.
+%%Parameters $x, y$, and intensity are all within the range $[0,1]$.
+%%For offset, it's 2\% of OFFSET\_RANGE (which is OFFSET\_MAX - OFFSET\_MIN).
+%%To determine the distance of values, we use the Euclidean distance.
 
 
 
@@ -839,16 +1116,37 @@ Conclusion goes here, as well as future work.
 \bibliographystyle{fer}
 
 \begin{sazetak}
-Sažetak na hrvatskom jeziku.
+Kriptografija je u temeljima velikog dijela moderne računalne infrastrukture,
+stoga je vrlo bitno da se u nju možemo pouzdati. Sigurnost malih, ugradbenih
+uređaja čini jedan dio tog. \\
+Elektromagnetsko umetanje greške (EMFI) je moćna tehnika za izvođenje napada
+umetanjem pogreške, ali zahtijeva odabir dobrih parametara u prostoru daleko
+prevelikom da bi se mogao iscrpno pretražiti. U ovom radu se iznosi evolucijski
+algoritam za pretragu prostora parametara za umetanje greške, kao i logika
+iza njegovog razvoja. Ovaj algoritam se potom koristi za pronalazak grešaka
+koje se koriste za algebarsku analizu grešaka (AFA) na SHA-3 (Keccak)
+kriptografskom heš algoritmu; dana je usporedba rezultata sa slučajnom
+osnovicom.
 
-\kljucnerijeci{Ključne riječi, odvojene zarezima.}
+\kljucnerijeci{umetanje pogreške, evolucijski algoritam, SHA-3, algebarska analiza grešaka, optimizacija parametara}
 \end{sazetak}
 
 \engtitle{Evolutionary Heuristics for Fault Injection parameter Space Search}
 \begin{abstract}
-Abstract.
+Cryptography underpins a large part of modern computer infrastructure, making
+its reliability very important. The security of embedded devices and their
+tamper-resistance is a small part of this. \\
+Electromagnetic fault injection (EMFI) is a powerful fault injection technique
+for conducting fault injection (FI) attacks, however it requires choosing
+parameters in a parameter space that's far too large to perform an exhaustive
+search, and presently there appears to be no good method for conducting the
+search for good parameters. In this thesis, an evolutionary algorithm for FI
+parameter search is presented, along with the rationale used in its development.
+This algorithm is used to find faults for an algebraic fault attack (AFA) on the
+SHA-3 (Keccak) cryptographic hash algorithm, and its results are compared with
+the random baseline.
 
-\keywords{Keywords.}
+\keywords{electromagnetic fault injection, evolutionary algorithm, SHA-3, algebraic fault attack, parameter optimization}
 \end{abstract}
 
 \end{document}
