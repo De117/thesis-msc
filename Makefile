@@ -6,7 +6,6 @@ thesis: diplomski.tex literatura.bib
 	bibtex diplomski
 	xelatex diplomski.tex
 	xelatex diplomski.tex
-	touch diplomski.aux
 
 clean:
 	rm -f diplomski.aux diplomski.bbl diplomski.blg diplomski.toc diplomski.log

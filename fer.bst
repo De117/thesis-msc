@@ -1,21 +1,43 @@
-%% File: `fer.bst'
-%% A translation of `plainnat.bst' in Croatian 
+%% File: `plainnat.bst'
+%% A modification of `plain.bst' for use with natbib package 
 %%
-%% Copyright 2010 Ivan Krišto
-%% E-mail: ivan.kristo@gmail.com
+%% Copyright 1993-2007 Patrick W Daly
+%% Max-Planck-Institut f\"ur Sonnensystemforschung
+%% Max-Planck-Str. 2
+%% D-37191 Katlenburg-Lindau
+%% Germany
+%% E-mail: daly@mps.mpg.de
 %%
 %% This program can be redistributed and/or modified under the terms
 %% of the LaTeX Project Public License Distributed from CTAN
 %% archives in directory macros/latex/base/lppl.txt; either
 %% version 1 of the License, or any later version.
 %%
+ % Version and source file information:
+ % \ProvidesFile{natbst.mbs}[2007/11/26 1.93 (PWD)]
+ %
  % BibTeX `plainnat' family
  %   version 0.99b for BibTeX versions 0.99a or later,
  %   for LaTeX versions 2.09 and 2e.
  %
  % For use with the `natbib.sty' package; emulates the corresponding
  %   member of the `plain' family, but with author-year citations.
- % See plainnat.bst for details.
+ %
+ % With version 6.0 of `natbib.sty', it may also be used for numerical
+ %   citations, while retaining the commands \citeauthor, \citefullauthor,
+ %   and \citeyear to print the corresponding information.
+ %
+ % For version 7.0 of `natbib.sty', the KEY field replaces missing
+ %   authors/editors, and the date is left blank in \bibitem.
+ %
+ % Includes field EID for the sequence/citation number of electronic journals
+ %  which is used instead of page numbers.
+ %
+ % Includes fields ISBN and ISSN.
+ %
+ % Includes field URL for Internet addresses.
+ %
+ % Includes field DOI for Digital Object Idenfifiers.
  %
  % Works best with the url.sty package of Donald Arseneau.
  %
@@ -207,7 +229,7 @@ FUNCTION {format.names}
               if$
               t "others" =
                 { " et~al." * }
-                { " i " * t * }
+                { " and " * t * }
               if$
             }
           if$
@@ -239,8 +261,8 @@ FUNCTION {format.editors}
     { "" }
     { editor format.names
       editor num.names$ #1 >
-        { ", urednici" * }
-        { ", urednik" * }
+        { ", editors" * }
+        { ", editor" * }
       if$
     }
   if$
@@ -300,7 +322,7 @@ FUNCTION {format.full.names}
               if$
               t "others" =
                 { " et~al." * }
-                { " i " * t * }
+                { " and " * t * }
               if$
             }
           if$
@@ -429,12 +451,12 @@ FUNCTION {either.or.check}
 FUNCTION {format.bvolume}
 { volume empty$
     { "" }
-    { "svezak" volume tie.or.space.connect
+    { "volume" volume tie.or.space.connect
       series empty$
         'skip$
-        { " od " * series emphasize * }
+        { " of " * series emphasize * }
       if$
-      "svezak i broj" number either.or.check
+      "volume and number" number either.or.check
     }
   if$
 }
@@ -444,13 +466,13 @@ FUNCTION {format.number.series}
     { number empty$
         { series field.or.null }
         { output.state mid.sentence =
-            { "broj" }
-            { "Broj" }
+            { "number" }
+            { "Number" }
           if$
           number tie.or.space.connect
           series empty$
             { "there's a number but no series in " cite$ * warning$ }
-            { " u " * series * }
+            { " in " * series * }
           if$
         }
       if$
@@ -463,8 +485,8 @@ FUNCTION {format.edition}
 { edition empty$
     { "" }
     { output.state mid.sentence =
-        { edition "l" change.case$ " izdanju" * }
-        { edition "t" change.case$ " izdanju" * }
+        { edition "l" change.case$ " edition" * }
+        { edition "t" change.case$ " edition" * }
       if$
     }
   if$
@@ -496,8 +518,8 @@ FUNCTION {format.pages}
 { pages empty$
     { "" }
     { pages multi.page.check
-        { "stranice" pages n.dashify tie.or.space.connect }
-        { "stranica" pages tie.or.space.connect }
+        { "pages" pages n.dashify tie.or.space.connect }
+        { "page" pages tie.or.space.connect }
       if$
     }
   if$
@@ -556,7 +578,7 @@ FUNCTION {format.chapter.pages}
 { chapter empty$
     'format.pages
     { type empty$
-        { "poglavlje" }
+        { "chapter" }
         { type "l" change.case$ }
       if$
       chapter tie.or.space.connect
@@ -572,8 +594,8 @@ FUNCTION {format.in.ed.booktitle}
 { booktitle empty$
     { "" }
     { editor empty$
-        { "U " booktitle emphasize * }
-        { "U " format.editors * ", " * booktitle emphasize * }
+        { "In " booktitle emphasize * }
+        { "In " format.editors * ", " * booktitle emphasize * }
       if$
     }
   if$
@@ -616,10 +638,10 @@ FUNCTION {format.article.crossref}
           warning$
           ""
         }
-        { "U \emph{" journal * "}" * }
+        { "In \emph{" journal * "}" * }
       if$
     }
-    { "U " }
+    { "In " }
   if$
   " \citet{" * crossref * "}" *
 }
@@ -627,10 +649,10 @@ FUNCTION {format.article.crossref}
 FUNCTION {format.book.crossref}
 { volume empty$
     { "empty volume in " cite$ * "'s crossref of " * crossref * warning$
-      "U "
+      "In "
     }
-    { "Svezak" volume tie.or.space.connect
-      " od " *
+    { "Volume" volume tie.or.space.connect
+      " of " *
     }
   if$
   editor empty$
@@ -663,13 +685,13 @@ FUNCTION {format.incoll.inproc.crossref}
               crossref * warning$
               ""
             }
-            { "U \emph{" booktitle * "}" * }
+            { "In \emph{" booktitle * "}" * }
           if$
         }
-        { "U " }
+        { "In " }
       if$
     }
-    { "U " }
+    { "In " }
   if$
   " \citet{" * crossref * "}" *
 }
@@ -892,7 +914,7 @@ FUNCTION {mastersthesis}
   new.block
   format.title "title" output.check
   new.block
-  "Magistarski rad" format.thesis.type output.nonnull
+  "Master's thesis" format.thesis.type output.nonnull
   school "school" output.check
   address output
   format.date "year" output.check
@@ -926,7 +948,7 @@ FUNCTION {phdthesis}
   new.block
   format.btitle "title" output.check
   new.block
-  "Doktorska disertacija" format.thesis.type output.nonnull
+  "PhD thesis" format.thesis.type output.nonnull
   school "school" output.check
   address output
   format.date "year" output.check
@@ -990,29 +1012,29 @@ FUNCTION {unpublished}
 FUNCTION {default.type} { misc }
 
 
-MACRO {jan} {"Sije\v{c}anj"}
+MACRO {jan} {"January"}
 
-MACRO {feb} {"Velja\v{c}a"}
+MACRO {feb} {"February"}
 
-MACRO {mar} {"O\v{z}ujak"}
+MACRO {mar} {"March"}
 
-MACRO {apr} {"Travanj"}
+MACRO {apr} {"April"}
 
-MACRO {may} {"Svibanj"}
+MACRO {may} {"May"}
 
-MACRO {jun} {"Lipanj"}
+MACRO {jun} {"June"}
 
-MACRO {jul} {"Srpanj"}
+MACRO {jul} {"July"}
 
-MACRO {aug} {"Kolovoz"}
+MACRO {aug} {"August"}
 
-MACRO {sep} {"Rujan"}
+MACRO {sep} {"September"}
 
-MACRO {oct} {"Listopad"}
+MACRO {oct} {"October"}
 
-MACRO {nov} {"Studeni"}
+MACRO {nov} {"November"}
 
-MACRO {dec} {"Prosinac"}
+MACRO {dec} {"December"}
 
 
 
@@ -1086,7 +1108,7 @@ FUNCTION {format.lab.names}
         'skip$
         { s #2 "{ff }{vv }{ll}{ jj}" format.name$ "others" =
             { " et~al." * }
-            { " i " * s #2 "{vv~}{ll}" format.name$ * }
+            { " and " * s #2 "{vv~}{ll}" format.name$ * }
           if$
         }
       if$
@@ -1125,7 +1147,7 @@ FUNCTION {author.key.organization.label}
     { key empty$
         { organization empty$
             { cite$ #1 #3 substring$ }
-            { "" #4 organization chop.word #3 text.prefix$ }
+            { "The " #4 organization chop.word #3 text.prefix$ }
           if$
         }
         'key
@@ -1140,7 +1162,7 @@ FUNCTION {editor.key.organization.label}
     { key empty$
         { organization empty$
             { cite$ #1 #3 substring$ }
-            { "" #4 organization chop.word #3 text.prefix$ }
+            { "The " #4 organization chop.word #3 text.prefix$ }
           if$
         }
         'key
@@ -1214,9 +1236,9 @@ FUNCTION {sort.format.names}
 
 FUNCTION {sort.format.title}
 { 't :=
-  "" #2
-    "" #3
-      "" #4 t chop.word
+  "A " #2
+    "An " #3
+      "The " #4 t chop.word
     chop.word
   chop.word
   sortify
@@ -1263,7 +1285,7 @@ FUNCTION {author.organization.sort}
             { key sortify }
           if$
         }
-        { "" #4 organization chop.word sortify }
+        { "The " #4 organization chop.word sortify }
       if$
     }
     { author sort.format.names }
@@ -1280,7 +1302,7 @@ FUNCTION {editor.organization.sort}
             { key sortify }
           if$
         }
-        { "" #4 organization chop.word sortify }
+        { "The " #4 organization chop.word sortify }
       if$
     }
     { editor sort.format.names }

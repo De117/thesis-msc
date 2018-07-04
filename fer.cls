@@ -69,7 +69,7 @@
 \else \if@enccp \RequirePackage[cp1250]{inputenc} \fi
 \fi
 
-\RequirePackage[croatian]{babel}
+%\RequirePackage[croatian]{babel}
 \RequirePackage[T1]{fontenc}
 \RequirePackage{graphicx} % Uključeno jer je često korišteno
 \RequirePackage{amssymb} % Uključeno jer je često korišteno
@@ -114,10 +114,10 @@
 % 1.5 prored, 1.3 je faktor za množenje
 \linespread{1.3}
 
-% Promjena naziva poglavlja ``Bibliografija'' -> ``Literatura''
-\addto\captionscroatian{%
-	\def\bibname{Literatura}
-}
+%% Promjena naziva poglavlja ``Bibliografija'' -> ``Literatura''
+%\addto\captionscroatian{%
+%	\def\bibname{Literatura}
+%}
 
 % Podešavanje oznaka kod listi (1. razina je crtica, 2. puni krug) 
 \renewcommand{\labelitemi}{\textendash}
@@ -265,16 +265,19 @@
 		\let\footnoterule\relax
 	
 		\begin{center}
-			{\large\sffamily SVEU\v{C}ILI\v{S}TE U ZAGREBU}
+			%{\large\sffamily SVEU\v{C}ILI\v{S}TE U ZAGREBU}
+			{\large\sffamily UNIVERSITY OF ZAGREB}
 			
-			{\large\bfseries\sffamily FAKULTET ELEKTROTEHNIKE I RA\v{C}UNARSTVA}
+			%{\large\bfseries\sffamily FAKULTET ELEKTROTEHNIKE I RA\v{C}UNARSTVA}
+			{\large\bfseries\sffamily FACULTY OF ELECTRICAL ENGINEERING AND COMPUTING}
 		\end{center}
 		\vfill
 		\begin{center}%
 	    	\if@radzavrsni%
 			  {\large\sffamily ZAVR\v{S}NI RAD br.~\@thesisnumber \par}%
 			\else \if@raddiplomski%
-			  {\large\sffamily DIPLOMSKI RAD br.~\@thesisnumber \par}%
+				%{\large\sffamily DIPLOMSKI RAD br.~\@thesisnumber \par}%
+				{\large\sffamily MASTER'S THESIS No.~\@thesisnumber \par}%
 			\else {\large\sffamily\bfseries SEMINAR \par}%
 			\fi\fi
 			\if@radseminar \vskip 3em%
@@ -296,9 +299,12 @@
 		\begin{center}
 			{\sffamily\large Zagreb, 
 			\ifcase\month\or
-				sije\v{c}anj\or velja\v{c}a\or o\v{z}ujak\or travanj\or svibanj\or
-	   	 		lipanj\or srpanj\or kolovoz\or rujan\or listopad\or studeni\or
-	    			prosinac\fi \space \number\year.%
+				January\or February\or March\or April\or May\or
+				June\or July\or August\or September\or October\or November\or
+					December\fi \space \number\year.%
+				%sije\v{c}anj\or velja\v{c}a\or o\v{z}ujak\or travanj\or svibanj\or
+				%lipanj\or srpanj\or kolovoz\or rujan\or listopad\or studeni\or
+				%	prosinac\fi \space \number\year.%
 	    	}
 		\end{center}
 	\end{titlepage}%
@@ -333,6 +339,11 @@
 % Naredba \engl
 \newcommand{\engl}[1]{(engl.~\emph{#1})}
 
+\def\crotitle#1{\gdef\@crotitle{#1}}
+\def\@crotitle{\@latex@warning@no@line{Hrvatski naziv rada nije definiran.
+Koristi \noexpand\crotitle za definiranje}}
+
+
 % Sažetak na hrvatskom
 \newenvironment{sazetak}
 {
@@ -340,7 +351,7 @@
 \vspace*{\fill}
 \thispagestyle{empty}
 \begin{center}
-  {\bf \@title}
+  {\bf \@crotitle}
 \end{center}
 \hspace*{\fill} {\bf Sa\v{z}etak} \hspace*{\fill} \par
 \vspace*{25pt}
