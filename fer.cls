@@ -261,13 +261,15 @@
 \if@titlepage
 	\renewcommand\maketitle{%
 	\begin{titlepage}%
+    % modify titlepage margins to fit in faculty title
+    \newgeometry{top=3cm, bottom=3cm, left=3.1cm, right=2.6cm}
 		\let\footnotesize\small
 		\let\footnoterule\relax
 	
 		\begin{center}
 			%{\large\sffamily SVEU\v{C}ILI\v{S}TE U ZAGREBU}
 			{\large\sffamily UNIVERSITY OF ZAGREB}
-			
+
 			%{\large\bfseries\sffamily FAKULTET ELEKTROTEHNIKE I RA\v{C}UNARSTVA}
 			{\large\bfseries\sffamily FACULTY OF ELECTRICAL ENGINEERING AND COMPUTING}
 		\end{center}
@@ -307,6 +309,8 @@
 				%	prosinac\fi \space \number\year.%
 	    	}
 		\end{center}
+    % restore normal margins for rest of thesis
+    \restoregeometry
 	\end{titlepage}%
 	\setcounter{footnote}{0}%
 	\global\let\maketitle\relax
