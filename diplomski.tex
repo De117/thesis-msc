@@ -119,62 +119,9 @@ a good algorithm for picking the parameters, and (if possible) mounting a
 successful fault attack.
 
 
-%Implementation attacks do not aim at the weakness of an algorithm, but at the
-%weaknesses in its implementation instead. Two well-known kinds of implementation
-%attacks are side-channel attacks (SCAs) and fault injection (FI) attacks.
-%Side-channel attacks are passive, non-invasive attacks where the device under
-%attack operates within specified conditions and the attacker simply observes
-%the physical leakages produced. Fault injection attacks are, on the other hand,
-%active, more invasive attacks where the attacker inserts faults (glitches) in
-%order to disrupt the normal behaviour of the algorithm.
-%
-%Side-channel attacks received a lot of attention in the last few decades where
-%we saw successful exploitation of several side channels like timing~\cite{kocher-timing_attacks},
-%power consumption~\cite{Kocher_SCA}, and EM emanation~\cite{10.1007/3-540-45418-7_17}.
-%To use that information and deliver as powerful as possible attacks, researchers
-%devised various strategies. What is especially interesting is that many of those
-%strategies in the last few years are based on machine learning~\cite{lerman11, PicekHJLGJM17}
-%and deep learning~\cite{CagliDP17}.
-%%Although considering distinct attack scenarios and often various techniques,
-%%all those papers have in common that they establish different use cases where
-%%machine learning is a powerful attack technique.
-%
-%Somewhat surprisingly, when considering fault injection attacks, the situation
-%looks much more straightforward. There are  several sources of glitches like
-%laser pulses, electrical glitches, and electromagnetic radiation. A fault
-%injection attack is successful if after exposing the device under attack to a
-%specially crafted external interference, the device shows an unexpected behaviour
-%i.e. a fault, which can be exploited by an attacker. Here, the challenge lies in
-%selecting the appropriate parameters for a fault to succeed. If those parameters
-%are not well chosen, the target will respond in a way that does not permit an
-%actual fault analysis attack. When considering various sources of faults, there
-%are different number of parameters and corresponding ranges. In general, the
-%search space size of possible parameter values is large and relatively few
-%points in the search space result in faults. Consequently, an interesting
-%question is: how to find suitable parameter values or intervals, or more
-%precisely, how to efficiently find the correct values in the search space?
-%Surprisingly, the main options today are to use either random search or some
-%sort of exhaustive search (since full exhaustive search is usually not possible
-%the attacker will concentrate only in some regions with a certain precision,
-%which we call here grid search). Analogously, if it is possible to make SCA
-%more powerful by using machine learning (and more generally, artificial
-%intelligence) one would expect the same to be possible with the fault injection.
-
-%In this paper, we discuss how to use a special type of metaheuristics called
-%genetic algorithms in order to find parameter values resulting in faults for
-%electromagnetic fault injection. A somewhat similar research direction is
-%followed in several papers~\cite{10.1007/978-3-319-08302-5_16, 6859734, 10.1007/978-3-319-21476-4_11}
-%but there the authors consider power glitching, which is a much simpler case
-%from the search space size perspective, and they attack the PIN mechanism in a
-%smartcard. Here, we use the faults obtained via our technique to mount an
-%algebraic fault attack on a SHA-3 implementation where we consider only pulsed
-%EMFI and we have a total of 5 parameters. We emphasize that our version of
-%search algorithm differs significantly from previous works as detailed in the
-%rest of the paper. Finally, our code is available as an open source implementation~\cite{memfaultsGithub}.\\
-
-
 This thesis is partly based on~\cite{paper_FDTC2018}, and hence reuses some
 of the material.
+
 
 \section{Related work}\label{sec:related_work}
 While a lot of work has been done on fault injection itself (see
@@ -423,8 +370,8 @@ That is, it:
 SHA-3 is sucessfully attacked in~\cite{luo2018algebraic} using AFA, and the
 attack is extended to an even more relaxed fault model (a 32-bit one) than
 was possible with DFA, since AFA makes better use of the faulty outputs.
-
-%TODO: a more detailed description of AFA on SHA-3 specifically is given in ...
+A more detailed description of AFA as it applies to SHA-3 specifically is
+given in chapter~\ref{ch:attacking_keccak}.
 
 
 \section{Implementation attacks and fault injection}
@@ -632,10 +579,9 @@ a spatial grid of at most $480 \times 480$. However, the limiting factor here
 is most likely the size of the probe tip (and its internal coil), which is much
 larger.
 
-%(TODO: compare to other people's more precise probe tips?)
 All of these will, of course, vary depending on the chip and the equipment at
 hand; even for different variants of the Piñata, the capacitors differ.
-A more precise XYZ table, a smaller probe (such as in e.g.~\cite{precise_probe_tips}),
+A more precise XYZ table, a smaller probe (such as in e.g.~\cite{ordas2015injection}),
 or a smaller chip will give different spatial resolutions.
 
 
@@ -776,12 +722,6 @@ options within the timeframe.
 \end{figure}
 
 
-
-%More in detail, our algorithm consists of two separate phases as follows:
-%\begin{enumerate}
-%    \item The first phase is a genetic algorithm where we run it for  20 generations with population size 50.
-%    \item Only when the genetic algorithm is done, we start with the local search, which takes 10 randomly chosen points in neighbourhood of each SUCCESS point. Note that this is a significant difference from related works where both GA and local search worked at the same time. We opted first to concentrate on exploration aspect -- GA (to explore various regions of the target) and only after that on exploitability aspect -- local search (to concentrate on more promising regions). Naturally, GA itself has also exploitability component that is especially manifested in the crossover operator but we also designed a custom made crossover operator that promotes exploration perspective.
-%\end{enumerate}
 
 
 \section{Objectives}\label{sec:objectives}
@@ -1164,18 +1104,26 @@ a single point, but an area. Hitting a smaller area means that points otherwise
 near, which would before have affected each other enough not to be distinguishable,
 now produce a different effect.
 
+To sum it up in one place, the final version is given below:
+\begin{enumerate}
+    \item first phase is a genetic algorithm, with the above-described custom crossover
+          and mutation, with $p_{MUT} = 0.05$, and 20 generations of size 50.
+    \item second phase is local search, which takes 10 randomly chosen points in
+          the neighbourhood of each SUCCESS point.
+\end{enumerate}
+
+Note how the parameters are set to stimulate exploration: both the custom
+within-hypercube crossover and the per-parameter mutation promote the many
+slight variations so nicely seen in Figure~\ref{fig:weaker_effect}. A lower
+number of generations with a larger population size (and the relatively high
+mutation rate) prevent the algorithm from converging too quickly, thus forcing
+it to spend some time exploring the search space, which gives a better idea
+of its shape.
+
+
 
 \section{The results}\label{sec:results}
 This section presents the results of injecting faults into SHA3-512.
-
-%First, we investigate how well is GA able to find faults (i.e., force the algorithm
-%to output the wrong ciphertext) and then, whether such points can be used in order
-%to obtain the state of the algorithm.
-%
-%There, we use algebraic fault analysis (AFA), as described in~\cite{luo2018algebraic}.
-%AFA eliminates the need for analysis of fault propagation as is needed in differential
-%fault analysis; instead it uses a SAT solver to recover the state bits from a
-%(clean output, faulty output) pair.
 
 The duration of the EA is determined by the number of faults it finds.
 Five independent runs were conducted, with 2\,074, 2\,343, 3\,353, 3\,606,
