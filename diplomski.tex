@@ -105,7 +105,7 @@ commonly against implementations.
 Zooming into this picture for something more concrete, we may find a service
 provider running attacker's code on the same machine as a vulnerable encryption
 library, just waiting for a cache-timing side-channel attack; or a TLS
-implementation that will curteously say when the padding is wrong, thus letting
+implementation that will courteously say when the padding is wrong, thus letting
 an attacker steal a session; or perhaps, a smartcard that can be persuaded by a
 carefully placed glitch in its power supply to give out its secret PIN.
 
@@ -157,7 +157,7 @@ They are able to reject over 50\% of the chip surface (75\% in their best case),
 while keeping 80\% of the points causing faults. Figure \ref{fig:emfisc} shows
 their coverage ratio -- the share of preserved faulty points -- dependent on $\alpha$.
 However, note that by \emph{fault}, they mean \emph{any} perturbation of the
-normal behavior of the algorithm.
+normal behaviour of the algorithm.
 
 \begin{figure}[htb]
     \centering
@@ -233,6 +233,7 @@ collision-resistant~\cite{merkle-damgard_security}.
     \centering
     \includegraphics{images/merkle-damgard.png}
     \caption{the Merkle-Damgård construction}
+    \label{fig:merkle-damgard}
 \end{figure}
 
 
@@ -242,7 +243,7 @@ an arbitrary amount of input and puts out a fixed-length output at the end, the
 sponge can alternate between taking in chunks of input (\emph{absorbing}) and
 putting out chunks of output (\emph{squeezing}); it has arbitrary-length output
 as well as arbitrary-length input.
-This is nicely illustrated in figure \ref{fig:sponge}.
+This is nicely illustrated in Figure \ref{fig:sponge}.
 
 %TODO: redo sponge description?
 %TODO: take out sponge.png in better quality?
@@ -344,7 +345,7 @@ respectively.
 \section{Algebraic fault analysis}
 Differential fault analysis (DFA) is an established technique for attacking
 cryptographic algorithms, introduced over twenty years ago in~\cite{DFA_DES}.
-It assumes that a fault has occured at a specific point in the execution of the
+It assumes that a fault has occurred at a specific point in the execution of the
 algorithm, and analyzes the propagation of a \emph{difference} between the
 original state and the new, faulty state. It has been applied to many well-known
 algorithms with great success, such as DES~\cite{DFA_DES}, AES~\cite{DFA_AES, DFA_AES_single-fault},
@@ -378,7 +379,7 @@ That is, it:
           bits
 \end{enumerate}
 
-SHA-3 is sucessfully attacked in~\cite{luo2018algebraic} using AFA, and the
+SHA-3 is successfully attacked in~\cite{luo2018algebraic} using AFA, and the
 attack is extended to an even more relaxed fault model (a 32-bit one) than
 was possible with DFA, since AFA makes better use of the faulty outputs.
 A more detailed description of AFA as it applies to SHA-3 specifically is
@@ -440,12 +441,12 @@ from the initial population by just selection and reproduction.
 After generating the offspring, the population is (whole or in part) replaced
 by the offspring: the next generation.
 
-The outline of an evolutionary algorithm is given below:
-\begin{algorithm}[h]\label{algo:evolutionary}
+The outline of an evolutionary algorithm is given below as Algorithm~\ref{algo:evolutionary}.
+\begin{algorithm}[!h]
     \begin{algorithmic}
         \STATE $\mathit{population} \gets$ generate initial population
         \REPEAT
-            \FOR{$\mathit{individua}l \in \mathit{population}$}
+            \FOR{$\mathit{individual} \in \mathit{population}$}
                 \STATE evaluate fitness ($\mathit{individual}$)
             \ENDFOR
             \STATE $\mathit{parents}    \gets$ select ($\mathit{population}$)
@@ -457,6 +458,7 @@ The outline of an evolutionary algorithm is given below:
         \RETURN choose best individual ($population$)
     \end{algorithmic}
     \caption{evolutionary algorithm pseudocode}
+    \label{algo:evolutionary}
 \end{algorithm}
 
 Mind that this is a fairly general outline.
@@ -479,8 +481,8 @@ interchangeable); multiple chromosomes are combined using \emph{crossover}
 (or \emph{recombination}) to produce offspring.
 
 However, what exactly falls under genetic algorithms and the exact lines between
-GAs and other evolutionary algorithms can at times be a bit vague. That's okay,
-since it's a metaheuristic we're talking about.
+GAs and other evolutionary algorithms can at times be a bit vague. That's alright,
+since it's a metaheuristic.
 To instance this \emph{metaheuristic} into a \emph{heuristic}, we need to replace
 these somewhat vague terms (selection, crossover, mutation, genetic representation)
 with concrete ones. This is left up to the implementer.
@@ -803,7 +805,7 @@ behaviour of different algorithms (or the same algorithm, but differently
 parametrized) over multiple runs, with only a fraction of the runtime cost.
 However, we can only expect this if the behaviour of the emulator closely
 matches that of the board. This poses a problem: how do we achieve this?
-Obviously, without modeling the chip itself (which would be a large problem
+Obviously, without modelling the chip itself (which would be a large problem
 in and of itself), the emulator must rely on samples of the objective function.
 
 The straightforward solution would be to exhaustively sample the parameter space
@@ -857,7 +859,7 @@ pseudocode is given below:
         \ELSE
             \STATE $parent_2$ $\gets$ random choice ($population \setminus \{parent_1\}$)
         \ENDIF
-        \STATE $child \gets$ classaware crossover ($parent_1$, $parent_2$)
+        \STATE $child \gets$ class-aware crossover ($parent_1$, $parent_2$)
         \STATE $child \gets$ mutate ($child$)
         \STATE $population_{new} \gets population_{new} \cup \{child\} $
     \ENDFOR
@@ -967,7 +969,7 @@ mutation will happen. It also means that significant jumps will tend to be mostl
 axis-aligned. The effect is somewhat similar to having a traditional crossover:
 many points on perpendicular lines, seemingly radiating from a hotspot; however
 the effect is weaker than with a single-cut crossover and a standard mutation
-which twiddles all the parameters at once. See figure \ref{fig:weaker_effect}
+which twiddles all the parameters at once. See Figure \ref{fig:weaker_effect}
 for a picture of this.
 
 \begin{figure*}[htp]
@@ -1065,8 +1067,8 @@ point clouds.
 \begin{figure*}[htbp]
     \centering
     \includegraphics[width=\textwidth]{images/GA-binary-local.png}
-    \caption{An example of the three-phase (GA + binary search + local search)
-             algorithm.
+    \caption{an example of the three-phase (GA + binary search + local search)
+             algorithm
     }
     \label{fig:three-phase-example}
 \end{figure*}
@@ -1266,7 +1268,7 @@ Naturally, figures without the NORMAL points have less points.
 		\label{fig:ga3}
 	\end{subfigure}
 	\label{fig:figures}
-	\caption{Results for EA (GA with local search) and random search.}
+	\caption{results for EA (GA with local search) and random search}
 \end{figure*}
 
 
@@ -1297,10 +1299,10 @@ model.
 
 Besides being more efficient at recovering state, AFA has several advantages:
 \begin{itemize}
- \item It does not require analysis of fault propagation through the algorithm,
+ \item it does not require analysis of fault propagation through the algorithm,
        making it much easier to abstract the internal details.
- \item The fault model can be easily changed, by just changing the appropriate constraints.
- \item Perhaps most importantly, it works for more relaxed fault models.
+ \item the fault model can be easily changed, by just changing the appropriate constraints.
+ \item perhaps most importantly, it works for more relaxed fault models.
 \end{itemize}
 
 
