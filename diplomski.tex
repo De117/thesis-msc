@@ -1,11 +1,17 @@
 \documentclass[times, utf8, diplomski]{fer}
 \usepackage{booktabs}
-\usepackage{algorithmic}    % for algorithm
+\usepackage{fontspec}                       % for non-ASCII characters, with xelatex
+\usepackage[binary-units=true]{siunitx}     % this one's for formatting SI units
+\usepackage{graphicx}                       % \
+\usepackage{subcaption}                     % / these two are for subcaptions
+
+% These packages are for writing pseudocode.
+% For details, see:
+%     https://tex.stackexchange.com/questions/229355/algorithm-algorithmic-algorithmicx-algorithm2e-algpseudocode-confused#230789
+%
+%\usepackage{algorithm}    % for the float `algorithm` environment
+\usepackage{algorithmic}  % for the actual pseudocode
 \usepackage[ruled]{algorithm2e}
-\usepackage{fontspec}   % works with xelatex: for non-ASCII characters
-\usepackage{siunitx}
-\usepackage{graphicx}
-\usepackage{subcaption}
 
 \begin{document}
 
@@ -73,16 +79,18 @@ This thesis is an attempt at covering one particular path down the rabbit hole.
 
 Its structure is roughly this:
 \begin{description}
-    \item[chapter \ref{ch:introduction}] lays out the general motivation and
+    \item[Chapter~\ref{ch:introduction}] lays out the general motivation and
           the current state of the art;
-    \item[chapter \ref{ch:prerequisites}] contains some technical prerequisites,
+    \item[Chapter~\ref{ch:prerequisites}] contains some technical prerequisites,
           covering evolutionary algorithms (and genetic algorithms in particular),
           fault injection, and SHA-3;
-    \item[chapter \ref{ch:fault_injection}] presents the setup I've used and
+    \item[Chapter~\ref{ch:fault_injection}] presents the setup I've used and
           describes the parameter space and the problem at hand;
-    \item[chapter \ref{ch:optimization}] deals with the optimization algorithm,
+    \item[Chapter~\ref{ch:optimization}] deals with the optimization algorithm,
           the simulator built to aid experimentation, and the results obtained;
-    \item[chapter \ref{ch:conclusion}] just wraps it all up, and presents
+    \item[Chapter~\ref{ch:attacking_keccak}] presents the procedure of exploiting
+          the faulty outputs, and covers the exploitation part of the results
+    \item[Chapter~\ref{ch:conclusion}] just wraps it all up, and presents
           directions for future improvements.
 \end{description}
 
@@ -264,7 +272,7 @@ the same internal structure, and differ in a few parameters.
 
 Its predecessors, SHA-1 and SHA-2, as well as some earlier algorithms which
 weren't standardized but are still widely used (MD4, MD5), were based on the
-Merkle-Damgård construction~\cite{merkle-damgard_reference}. Figure \ref{fig:merkle-damgard}
+Merkle-Damgård construction~\cite{merkle-damgard_revisited}. Figure \ref{fig:merkle-damgard}
 shows the general concept: the algorithm operates on blocks of data of size $B$.
 There exists an underlying function $f$, called the \emph{compression function},
 which takes $2B$ bits of input and produces $B$ bits of output. $f$ is essentially
@@ -272,11 +280,11 @@ a small hash function itself, but one with fixed-length input and output, which
 the Merkle-Damgård construction uses to build a "big" hash function, with
 arbitrary-length input. It can be proven that the "big" hash function will
 be collision-resistant if and only if the compression function is
-collision-resistant~\cite{TODO}.
+collision-resistant~\cite{merkle-damgard_security}.
 
 \begin{figure}[htb]\label{fig:merkle-damgard}
     \centering
-    %\includegraphics{images/merkle-damgard.png}
+    %TODO: \includegraphics{images/merkle-damgard.png}
     \caption{the Merkle-Damgård construction}
 \end{figure}
 
@@ -306,7 +314,7 @@ then mixing its internal state while spitting out chunks of output.
 
 With traditional hash functions, security is expressed in terms of number of
 output bits: a hash function with an $n$-bit output is supposed to have $n/2$
-bits of security, i.e. the easiest attack has a complexity of $O(\frac{n}{2})$.
+bits of security, i.e. the easiest attack has a complexity of $O(n/2)$.
 This corresponds to having a random oracle output $n$ bits, and attacking it
 with the generic attack which relies on the birthday paradox.
 
@@ -347,7 +355,7 @@ for different parts of the state.
 \begin{figure}[htb]
     \centering
     \includegraphics{images/keccak_state.png}
-    \caption{notation for parts of the state array}
+    \caption{notation for parts of the Keccak state array}
     \label{fig:keccak_state}
 \end{figure}
 
@@ -373,6 +381,50 @@ The constants $r(x,y)$ are rotation offsets. $RC$ is the round constant.
 For more details, see~\cite{keccak_reference}.
 
 %TODO: explain the phases properly
+
+
+\section{Algebraic fault analysis}
+Differential fault analysis (DFA) is an established technique for attacking
+cryptographic algorithms, introduced over twenty years ago in~\cite{DFA_DES}.
+It assumes that a fault has occured at a specific point in the execution of the
+algorithm, and analyzes the propagation of a \emph{difference} between the
+original state and the new, faulty state. It has been applied to many well-known
+algorithms with great success, such as DES~\cite{DFA_DES}, AES~\cite{DFA_AES, DFA_AES_single-fault},
+and the SHA-1 compression function~\cite{DFA_SHA-1_compression}. The direct
+predecessor of the DFA attack was used to break RSA~\cite{boneh-demillo-lipton_RSA}.
+SHA-3, likewise, has been shown to be vulnerable to fault injection with DFA,
+first with single-bit faults~\cite{DFA_SHA-3_single-bit}, and later with byte
+faults~\cite{luo2017relaxed}.
+
+However, DFA can be very cumbersome, requiring complex and tedious analysis of
+how the differential propagates through the algorithm. Even with an algorithm
+such as Keccak, with algebraically simple internals, the differential propagation
+is not exactly easy to follow.\footnotemark
+
+\footnotetext{
+    The reader is certainly invited to give it a try --- the byte-fault
+    propagation in~\cite{luo2017relaxed} is quite bearable.
+}
+
+Algebraic fault analysis (AFA) sidesteps this problem. Instead of manually
+analyzing the propagation, AFA uses an appropriately constrained SAT solver.
+That is, it:
+\begin{enumerate}
+    \item encodes (part of) the cryptographic algorithm as Boolean statements
+    \item encodes the fault model (assumptions about the fault: its position
+          and effect) as Boolean statements
+    \item gives the above to the SAT solver as constraints
+    \item gives the (good output value, bad output value) pair to the SAT solver
+          as constraints
+    \item uses the SAT solver to do the work of calculating the implied secret
+          bits
+\end{enumerate}
+
+SHA-3 is sucessfully attacked in~\cite{luo2018algebraic} using AFA, and the
+attack is extended to an even more relaxed fault model (a 32-bit one) than
+was possible with DFA, since AFA makes better use of the faulty outputs.
+
+%TODO: a more detailed description of AFA on SHA-3 specifically is given in ...
 
 
 \section{Implementation attacks and fault injection}
@@ -433,21 +485,20 @@ by the offspring: the next generation.
 The outline of an evolutionary algorithm is given below:
 \begin{algorithm}[h]\label{algo:evolutionary}
     \begin{algorithmic}
-        \STATE population := generate initial population
+        \STATE $\mathit{population} \gets$ generate initial population
         \REPEAT
-            \FOR{individual $\in$ population}
-                \STATE evaluate fitness of individual
+            \FOR{$\mathit{individua}l \in \mathit{population}$}
+                \STATE evaluate fitness ($\mathit{individual}$)
             \ENDFOR
-            \STATE parents    := select ( population )
-            \STATE offspring  := generate offspring ( parents )
-            \STATE population := offspring
+            \STATE $\mathit{parents}    \gets$ select ($\mathit{population}$)
+            \STATE $\mathit{offspring}  \gets$ generate offspring ($\mathit{parents}$)
+            \STATE $\mathit{population} \gets  \mathit{offspring}$
 
         \UNTIL{termination criterion met}
 
-        \RETURN choose best individual ( population )
+        \RETURN choose best individual ($population$)
     \end{algorithmic}
-    %\vspace{10pt}
-    %\caption{evolutionary algorithm pseudocode}
+    \caption{evolutionary algorithm pseudocode}
 \end{algorithm}
 
 Mind that this is a fairly general outline.
@@ -481,156 +532,37 @@ with concrete ones. This is left up to the implementer.
 \chapter{Fault injection}\label{ch:fault_injection}
 One obvious prerequisite for doing fault injection is a physical device running
 an actual algorithm to inject faults in. A cryptographic algorithm can be found
-easily enough; a susceptible one, with a bit of literature review. A device to
+easily; a susceptible one, with a bit of literature review. A device to
 attack, as well as the necessary equipment for glitching it, can be a bit harder
 to find.
 
-Section \ref{sec:setup} covers the physical setup used for the experiments;
-section \ref{sec:parameters} presents the parameteters used, and section
-\ref{sec:search_space} the big motivation for having a search at all.
-Sections \ref{sec:assumptions} and \ref{sec:objectives} take care of
-the implicit assumptions on the search space and our requirements for
-the algorithm. Section \ref{sec:practical_considerations} covers some
-practical implications of EM fault injection for the algorithm.
-
-\section{Experimental Setup}\label{sec:setup}
-For the target, a Cortex-M4 STM32F407IG (Riscure ``Pi\~{n}ata'') board was used,
-running a C implementation of SHA-3. This implementation was taken from the WolfSSL
-library~\cite{WolfSSL}, so as to have a real-world algorithm instead of a toy one.
-The board communicates to a PC by a serial interface and is powered by an external
-power supply (3.3V DC). For inducing an electromagnetic pulse, the Riscure EM probe
-is used, as well as their VCGlitcher device that controls it. The board and the EM
-probe are set up on an $XYZ$ table which moves the probe around in space.
-The whole setup is controlled by code written in Python; for communicating with
-the Riscure equipment, Python bindings for the VCGlitcher C API are used.
-\footnote{
-   Currently, due to the provided DLL being a 32-bit one, a 32-bit Python
-   interpreter is required. This may change in the future.
-}
-
-Besides the serial interface, the board has a number of I/O pins which it can
-toggle to high or low; the only one here used is the "trigger" pin. This pin is
-used to signal to the VCGlitcher device that the cryptographic operation is in
-progress; this is used as a reference point for injecting the fault. While this
-slightly detracts from the realism of the attack, it greatly simplifies testing.
-(It does not make much difference for the vulnerability status of the device,
-since in real life the attacker only needs to spend more time figuring out the
-timing.)
-
-In the case that the board gets stuck in an illegal state after a glitch, it
-needs to be reset. The only reliable way to reset this particular board is by
-cutting its power, which can take a significant fraction of a second, depending
-on the capacitors. A pause of \SI{100}{\milli\second} was used for this.
-
-The physical dimensions of the chip package are $24 \times 24$\,\si{\milli\metre}
-Repositioning error of the $XYZ$ table is \SI{0.05}{\milli\metre}, which gives a spatial grid
-of at most $480 \times 480$. However, the limiting factor here is most likely
-the size of the probe tip (and its internal coil), which is much larger.
-
-%(TODO: compare to other people's more precise probe tips?)
-All of these will, of course, vary depending on the chip and the equipment at
-hand; even for different variants of the Piñata, the capacitors differ.
-A more precise $XYZ$ table, a smaller probe (such as in e.g.~\cite{precise_probe_tips}),
-or a smaller chip will give different spatial resolutions.
+This chapter is laid out thus: section \ref{sec:definitions} introduces the
+definitions used in the rest of the paper; section \ref{sec:setup} covers
+the physical setup used for the experiments; section \ref{sec:parameters}
+presents the parameters used, and section \ref{sec:search_space} the big
+motivation for having a search at all. Sections \ref{sec:assumptions} and
+\ref{sec:objectives} take care of the implicit assumptions on the search
+space and our requirements for the algorithm; section \ref{sec:note_on_algorithms}
+covers the impact the underlying cryptographic algorithm on the parameter
+space; last, section \ref{sec:practical_considerations} covers some practical
+implications of EM fault injection for the algorithm.
 
 
-\section{Parameters}\label{sec:parameters}
-There are multiple parameters to vary to affect the probability of causing a
-fault: position of the probe tip (X, Y, and Z), pulse intensity, time offset
-of the pulse, pulse duration, shape and angle of the probe tip, and pulse shape.
 
-In the experiments conducted, only a subset of these are considered:
+\section{Definitions}\label{sec:definitions}
+When discussing the search and possible outputs of the algorithm,
 \begin{description}
-  \item[position] -- two parameters (X and Y), since the distance from the board
-        (Z) can be compensated by a change in intensity. The $(x,y,z)$ position
-        in real space is mapped by the interfacing code to an $(x,y)$ position
-        in the unit square $[0,1]^2 \in \mathbb{R}$.
-  \item[glitch intensity] -- regulates the voltage of the pulse. The SDK manual
-        suggests that it is a percentage of power used~\cite{RiscureVCGmanual},
-        so it makes sense to map it to real values in $[0,1]$.
-  \item[time offset] -- between 367 and 375\,\si{\micro\second}, because that is
-        where the injection point must be, for the code we are running. The offset
-        is encoded as an integer value (number of \SI{2}{\nano\second} ticks).
-  \item[number of repetitions of the pulse] -- a primitive form of pulse shape.
-        This parameter is set to be in the (obviously, integral) range $[1, 10]$.
+    \item[a point] is a distinct set of parameters, i.e. a point in the parameter space.
+    \item[a measurement] is the result of a single attempt at glitching the target with those parameters.
 \end{description}
 
-The pulse duration stays constant at a fixed value of \SI{40}{\nano\second} Similarly, the shape
-and angle of the probe tip is not varied, since changing those cannot be easily
-automated.
+A single point may measured be measured multiple times, since trying the same
+parameters multiple times does not necessarily always yield the same response.
+In the rest of this thesis, only single-measurement and five-measurement points
+are used.
 
-
-
-\section{Search Space Size}\label{sec:search_space}
-One might wonder: why use a heuristic at all? What's wrong with a "dumb"
-approach to parameter optimization? Let's consider the straightforward
-approach: an exhaustive search.
-
-The maximal spatial resolution, as I mentioned above, is $480 \times 480$ for
-this particular setup; a better setup would have an even higher one. For the
-time offset, the resolution is \SI{2}{\nano\second}; for a reasonable range,
-I'll put the interval between 367 and 375 microseconds, since this was measured
-as the interval containing the fault injection point -- this gives us a total of
-4\,000 different values; for the glitch intensity, there's really no good rule
-for determining the smallest meaningful increment, but a 1\% increment seems
-a fairly reasonable (if conservative) estimate based on visual estimates of
-the results, which would give a range of 100 values; the repetitions parameter
-in range $[1,10]$ gives an extra 10 values.
-
-The total size is therefore $480*480*4\,000*100*10\approx 10^{12}$.
-At $\approx0.16$ seconds per measurement, and five measurements per point, this
-results in 29\,203 years to conduct an exhaustive search. Even if completely
-ignoring everything but X, Y, and offset, an exhaustive search would still
-take 29.2 years to finish.
-
-
-\section{Some assumptions}\label{sec:assumptions}
-From the viewpoint of the optimization algorithm, the device should be as close
-as possible to a black box. That is to say, the algorithm should not have built-in
-assumptions that would be broken by running it for another device or cryptographic
-algorithm. However, I do make several assumptions:
-one, the objective function is not a golf-course. In a golf-course function, the
-gradient in the fitness landscape doesn't lead to optimal solutions, which tend
-to "pop out of nowhere", all of a sudden. Given the nature of EM glitching, the
-transition between different kinds of behaviour should be reasonably gentle; the
-reasoning behind it is that a very weak EM pulse will not affect the target at all,
-and we will observe normal behaviour. Conversely, a very strong EM pulse will
-completely dishevel its operation and even potentially damage it. So, we should
-expect faulty behaviour to occur somewhere between those two extremes, i.e.,
-along the class border.
-
-Additionally, offset ranges (min. to max. offset) are set by the user,
-based on a rough expectation of the duration of the cryptographic algorithm.
-
-Usually, the objective function guides the optimization algorithm towards better
-solutions, and the algorithm ends when it finds the best one. Here, we don't want
-just a single "best" solution since not every fault that's found will also be
-exploitable, and there are situations where more than one are required, so the
-aim is to obtain multiple solutions.
-
-
-\section{Objectives}\label{sec:objectives}
-The requirements for this optimization algorithm are:
-\begin{description}
-    \item[Good coverage of the parameter space] -- since we do not know where the
-          exploitable faults are located, we need to explore the search space efficiently.
-    \item[Speed] -- we require the algorithm to be fast in finding the faults, otherwise
-          there is no advantage of using it when compared to random search, for instance.
-\end{description}
-
-These two requirements somewhat conflict with each other. Because most of the
-parameter space is useless (i.e. has no faults), covering enough space to be
-reasonably secure we did not miss anything important means potentially wasting
-a lot of measurements.
-
-Next, the terminology used when discussing the search and possible outputs of the algorithm.
-A point is a distinct set of parameters, i.e. a point in the parameter space.
-A measurement is the result of a single attempt at glitching the target with those parameters.
-
-Each point is measured five times, since trying the same parameters multiple
-times does not necessarily always yield the same response.
-
-When counting the faulty measurements, we distinguish between:
+When counting the faulty measurements (i.e. those resulting in a faulty
+response), we distinguish between:
 \begin{enumerate}
     \item the total number of faulty measurements,
     \item the number of distinct faulty responses (i.e. ``unique faulty measurements'').
@@ -656,6 +588,222 @@ We classify the board response in one of the following classes:
                        same class, the point is put into one of the first three classes; otherwise
                        it goes into the CHANGING class.
 \end{description}
+
+\emph{Random search} refers to just randomly choosing points to scan.
+\emph{Grid search} is scanning points in a regularly-spaced grid that covers all
+or part of the search space.
+For the purposes of this thesis, random search is the baseline search algorithm.
+
+
+\section{Experimental Setup}\label{sec:setup}
+For the target, a Cortex-M4 STM32F407IG (Riscure ``Pi\~{n}ata'') board was used,
+running a C implementation of SHA-3. This implementation was taken from the WolfSSL
+library~\cite{WolfSSL}, so as to have a real-world algorithm instead of a toy one.
+The board communicates to a PC by a serial interface and is powered by an external
+power supply (\SI{3.3}{\volt} DC). For inducing an electromagnetic pulse, the
+Riscure EM probe is used, as well as their VCGlitcher device that controls it.
+The board and the EM probe are set up on an XYZ table which moves the probe
+around in space. The whole setup is controlled by code written in Python; for
+communicating with the Riscure equipment, Python bindings for the VCGlitcher
+C API are used.\footnotemark
+
+\footnotetext{
+   Currently, due to the provided DLL being a 32-bit one, a 32-bit Python
+   interpreter is required. This may change in the future.
+}
+
+Besides the serial interface, the board has a number of I/O pins which it can
+toggle to high or low; the only one here used is the "trigger" pin. This pin is
+used to signal to the VCGlitcher device that the cryptographic operation is in
+progress; this is used as a reference point for injecting the fault. While this
+slightly detracts from the realism of the attack, it greatly simplifies testing.
+(It does not make much difference for the vulnerability status of the device,
+since in real life the attacker only needs to spend more time figuring out the
+timing.)
+
+In the case that the board gets stuck in an illegal state after a glitch, it
+needs to be reset. The only reliable way to reset this particular board is by
+cutting its power, which can take a significant fraction of a second, depending
+on the capacitors. A pause of \SI{100}{\milli\second} was used for this.
+
+The physical dimensions of the chip package are $24 \times 24$\,\si{\milli\metre}
+Repositioning error of the XYZ table is \SI{0.05}{\milli\metre}, which gives
+a spatial grid of at most $480 \times 480$. However, the limiting factor here
+is most likely the size of the probe tip (and its internal coil), which is much
+larger.
+
+%(TODO: compare to other people's more precise probe tips?)
+All of these will, of course, vary depending on the chip and the equipment at
+hand; even for different variants of the Piñata, the capacitors differ.
+A more precise XYZ table, a smaller probe (such as in e.g.~\cite{precise_probe_tips}),
+or a smaller chip will give different spatial resolutions.
+
+
+\section{Parameters}\label{sec:parameters}
+There are multiple parameters to vary to affect the probability of causing a
+fault: position of the probe tip (X, Y, and Z), pulse intensity, time offset
+of the pulse, pulse duration, shape and angle of the probe tip, and pulse shape.
+
+In the experiments conducted, only a subset of these are considered:
+\begin{description}
+  \item[position] -- two parameters (X and Y), since the distance from the board
+        (Z) can be compensated by a change in intensity. The $(x,y,z)$ position
+        in real space is mapped by the interfacing code to an $(x,y)$ position
+        in the unit square $[0,1]^2 \in \mathbb{R}$.
+  \item[glitch intensity] -- regulates the voltage of the pulse. The SDK manual
+        suggests that it is a percentage of power used~\cite{RiscureVCGmanual},
+        so it makes sense to map it to real values in $[0,1]$.
+  \item[time offset] -- between 367 and 375\,\si{\micro\second}, because that is
+        where the injection point must be, for the code we are running. The offset
+        is encoded as an integer value (number of \SI{2}{\nano\second} ticks).
+  \item[number of repetitions of the pulse] -- a primitive form of pulse shape.
+        This parameter is set to be in the (obviously, integral) range $[1, 10]$.
+\end{description}
+
+The pulse duration stays constant at a fixed value of \SI{40}{\nano\second}.
+Similarly, the shape and angle of the probe tip is not varied, since changing
+those cannot be easily automated.
+
+Most parameters are within $[0,1]$, but we can map the other ones to that
+interval as well, by taking its "percentage": a parameter with range $[A,B]$,
+a value $x \in [A,B]$ is mapped to $y = \frac{x-A}{A-B}$, which is in $[0,1]$.
+With everything mapped to $[0,1]^5$, we can now define any length or distance
+to be the standard Euclidean distance in this image of the parameter space.
+
+
+\section{Search Space Size}\label{sec:search_space}
+One might wonder: why use a heuristic at all? What's wrong with a "dumb"
+approach to parameter optimization? Let's consider the straightforward
+approach: an exhaustive search.
+
+The maximal spatial resolution, as I mentioned above, is $480 \times 480$ for
+this particular setup; a better setup would have an even higher one. For the
+time offset, the resolution is \SI{2}{\nano\second}; for a reasonable range,
+I'll put the interval between 367 and 375 microseconds, since this was measured
+as the interval containing the fault injection point -- this gives us a total of
+4\,000 different values; for the glitch intensity, there's really no good rule
+for determining the smallest meaningful increment, but a 1\% increment seems
+a fairly reasonable (if conservative) estimate based on visual estimates of
+the results, which would give a range of 100 values; the repetitions parameter
+in range $[1,10]$ gives an extra 10 values.
+
+The total size is therefore $480*480*4\,000*100*10\approx 10^{12}$.
+At $\approx0.16$ seconds per measurement, and five measurements per point, this
+results in 29\,203 years to conduct an exhaustive search. Even if completely
+ignoring everything but X, Y, and offset, an exhaustive search would still
+take 29.2 years to finish.
+
+
+
+\section{Some assumptions on the search space}\label{sec:assumptions}
+From the viewpoint of the optimization algorithm, the device should be as close
+as possible to a black box. That is to say, the algorithm should not have built-in
+assumptions that would be broken by running it for another device or cryptographic
+algorithm. However, I do make some assumptions:
+the objective function is not a golf-course. In a golf-course function, the
+gradient in the fitness landscape doesn't lead to optimal solutions, which tend
+to "pop out of nowhere", all of a sudden. Given the nature of EM glitching, the
+transition between different kinds of behaviour should be reasonably gentle; the
+reasoning behind it is that a very weak EM pulse will not affect the target at all,
+and we will observe normal behaviour. Conversely, a very strong EM pulse will
+completely dishevel its operation and even potentially damage it. Consequently,
+we should expect faulty behaviour to occur somewhere between those two extremes,
+i.e. along the class border; in other words, there are blobs of RESETs in a sea
+of NORMALs, wrapped in a thin layer of SUCCESSes and CHANGINGs.
+
+Additionally, offset ranges (min. to max. offset) are set by the user,
+based on a rough expectation of the duration of the cryptographic algorithm.
+
+
+
+\section{A note on underlying algorithms}\label{sec:note_on_algorithms}
+Some of the early scans and tests were done not on the Piñata running SHA3-512,
+but Piñata running EdDSA (also taken from WolfSSL). There exists a difference
+between their respective search spaces: the parameters and the parameter ranges
+are largely the same (there is a difference in the offset range, since EdDSA
+takes $\approx$\SI{30}{\milli\second} to run, SHA3-512 only $\approx$\SI{0.4}{\milli\second}),
+but underlying calculation and the "look" of the parameter space is different.
+In EdDSA, the vast majority of the time is spent performing a scalar
+multiplication on the Ed25519 curve, and the parameter space has one big
+blob of RESETs, the rest being filled by NORMALs. For SHA3-512, all the
+time is spent on the Keccak-$f$ transformation, and the parameter space
+has not only the (substantially smaller) blob of RESETs, but also several
+blobs composed of mostly CHANGING points, with a number of RESETs and SUCCESSes.
+Figure \ref{fig:parameter_spaces} shows what the parameter space looks like
+for both of these.
+
+CHANGING points (and some other features) were not present from the start;
+they were implemented just before switching to SHA-3, hence most scans on EdDSA
+don't have them, and use single-measurement points instead. The process of
+selecting the algorithm and its hyperparameters was not a systematic one
+with extensive tuning, but a pragmatic one of choosing the most promising
+options within the timeframe.
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \includegraphics[width=0.95\linewidth]{images/plots/EdDSA_space_all_2D.png}
+        \caption{EdDSA, in the 2 spatial dimensions}
+    \end{subfigure}
+    \hspace{8pt}
+    \begin{subfigure}[b]{0.48\textwidth}
+        \includegraphics[width=0.95\linewidth]{images/plots/Keccak_space_all_2D.png}
+        \caption{SHA3-512, in the 2 spatial dimensions}
+    \end{subfigure}
+
+    \begin{subfigure}[b]{0.48\textwidth}
+        \includegraphics[width=0.95\linewidth]{images/plots/EdDSA_space_all_3D.png}
+        \caption{EdDSA, 2 spatial dimensions and intensity}
+    \end{subfigure}
+    \hspace{8pt}
+    \begin{subfigure}[b]{0.48\textwidth}
+        \includegraphics[width=0.95\linewidth]{images/plots/Keccak_space_all_3D.png}
+        \caption{SHA3-512, 2 spatial dimensions and intensity}
+    \end{subfigure}
+
+    \begin{subfigure}[b]{0.48\textwidth}
+        \includegraphics[width=0.95\linewidth]{images/plots/EdDSA_space_nonormal_3D.png}
+        \caption{EdDSA, but without NORMAL points for clarity}
+    \end{subfigure}
+    \hspace{8pt}
+    \begin{subfigure}[b]{0.48\textwidth}
+        \includegraphics[width=0.95\linewidth]{images/plots/Keccak_space_nonormal_3D.png}
+        \caption{SHA3-512, but without NORMAL points for clarity}
+    \end{subfigure}
+
+    \caption{parameter space visualization, for EdDSA and SHA3-512}
+    \label{fig:parameter_spaces}
+\end{figure}
+
+
+
+%More in detail, our algorithm consists of two separate phases as follows:
+%\begin{enumerate}
+%    \item The first phase is a genetic algorithm where we run it for  20 generations with population size 50.
+%    \item Only when the genetic algorithm is done, we start with the local search, which takes 10 randomly chosen points in neighbourhood of each SUCCESS point. Note that this is a significant difference from related works where both GA and local search worked at the same time. We opted first to concentrate on exploration aspect -- GA (to explore various regions of the target) and only after that on exploitability aspect -- local search (to concentrate on more promising regions). Naturally, GA itself has also exploitability component that is especially manifested in the crossover operator but we also designed a custom made crossover operator that promotes exploration perspective.
+%\end{enumerate}
+
+
+\section{Objectives}\label{sec:objectives}
+The requirements for this optimization algorithm are:
+\begin{description}
+    \item[Good coverage of the parameter space] -- since we do not know where the
+          exploitable faults are located, we need to explore the search space efficiently.
+    \item[Speed] -- we require the algorithm to be fast in finding the faults, otherwise
+          there is no advantage of using it when compared to the baseline.
+\end{description}
+
+These two requirements somewhat conflict with each other. Because most of the
+parameter space is useless (i.e. has no faults), covering enough space to be
+reasonably secure we did not miss anything important means potentially wasting
+a lot of measurements.
+
+Usually, the objective function guides the optimization algorithm towards better
+solutions, and the algorithm ends when it finds what it considers to be the best
+one. Here, we don't want just a single "best" solution since not every fault
+that's found will also be exploitable, and there are situations where more than
+one are required; instead the aim is to obtain multiple good solutions.
+
 
 
 \section{Practical Considerations}\label{sec:practical_considerations}
@@ -687,9 +835,10 @@ case of a random or grid scan, this requires splitting the scan into batches
 where each covers more or less the whole parameter space, since scanning points
 in the optimal (or nearly-optimal) order results in uneven coverage: as a
 general rule, a segment the shortest Hamiltonian path from any given starting
-point will not evenly cover the $(X,Y)$-plane, but instead a small part of it.
+point will not evenly cover the XY-plane, but instead a small part of it.
 
 %TODO: calculate exactly how much less efficient?
+
 
 
 
@@ -712,14 +861,15 @@ impossible in terms of time, and very hard in terms of space ($\approx 5 \cdot
 10^{12}$ measurements!). What \emph{is} possible, however, is a lower-resolution
 grid scan, with interpolation between points. This was, in fact, performed: the
 largest of these is a grid scan with $1/40$ resolution in the XY-plane, $1/20$
-resolution in the intensity dimension, 9 offset values (from 367μs to 375μs,
-with 1μs step), and with repetitions set to 1. This gives $41 \times 41 \times
-21 \times 9 = 317709$ points; with an average of 1.125s per point, around 100
-hours, or a bit over four days. Given that this is a grid scan, it greatly
-simplifies storage and nearest-neighbour lookup: caching it as a bare NumPy
-array in a binary file takes up less than 3MiB of space, the loading takes
-just a fraction of a second, and once in RAM, the lookup is as trivial as it
-gets. This is relatively easy to extend to k-nearest neighbours.
+resolution in the intensity dimension, 9 offset values (from \SI{367}{\micro\second}
+to \SI{375}{\micro\second}, with \SI{1}{\micro\second} step), and with repetitions
+set to 1. This gives $41 \times 41 \times 21 \times 9 = 317709$ points; with an
+average of \SI{1.125}{\second} per point, this takes around 100 hours, or a bit
+over four days. Given that this is a grid scan, it greatly simplifies storage
+and nearest-neighbour lookup: caching it as a bare NumPy array in a binary file
+takes up less than \SI{3}{\mebi\byte} of space, the loading takes just a
+fraction of a second, and once in RAM, the lookup is as trivial as it gets.
+This is relatively easy to extend to $k$-nearest neighbours.
 
 Another variant, made convenient by the availability of a number of scans of the
 parameter space, would be to abandon the notion of a regular grid, aggregate all
@@ -731,83 +881,21 @@ In any case, the emulator will be intrinsically limited due to being bound to
 actual data.
 
 
-\section{Algorithms}
 
-TODO: write up the algorithms used, adapt the main GA writeup
-
-Several algorithms were tried out; most of them GA-based.
-For the baseline, a simple random search was used.
-
-Note: some of the early scans and tests were done not on the Piñata running
-SHA3-512, but Piñata running EdDSA (also taken from WolfSSL). There exists a
-difference between their respective search spaces: the parameters and the
-parameter ranges are largely the same (there is a difference in the offset
-range, since EdDSA takes $\approx$\SI{30}{\milli\second} to run, but SHA3-512
-only $\approx$\SI{0.4}{\milli\second}), but underlying calculation and the
-"look" of the parameter space is different. In EdDSA, the vast majority of
-the time is spent performing a scalar multiplication on the Ed25519 curve,
-and the parameter space has one big blob of RESETs, the rest being filled
-by NORMALs. For SHA3-512, all the time is spent on the Keccak-$f$
-transformation, and the parameter space has not only the (substantially smaller)
-blob of RESETs, but also several blobs composed of mostly CHANGING points, with
-a number of RESETs and SUCCESSes. Figure \ref{fig:parameter_spaces} shows what
-the parameter space looks like for both of these.
-
-CHANGING points (and some other features) were not present from the start;
-they were implemented just before switching to SHA3, hence most scans on EdDSA
-don't have them. The process of selecting the algorithm and its hyperparameters
-was not a systematic one with extensive tuning, but a pragmatic one of choosing
-the most promising options within the timeframe.
-
-\begin{figure}[htbp]
-    \centering
-    %\includegraphics{images/parameter_spaces.png}
-    \caption{parameter space, for EdDSA and SHA3-512}
-    \label{fig:parameter_spaces}
-\end{figure}
-
-
-
-%Despite the fact that we use genetic algorithms like some previous
-%works~\cite{10.1007/978-3-319-08302-5_16, 10.1007/978-3-319-21476-4_11},
-%our custom made algorithm is quite different. We discuss the specifics of our
-%design in the following paragraphs. Our algorithm has several parameters to be
-%determined. We selected those values on the basis of our tuning experiments and
-%recommendations from~\cite{10.1007/978-3-319-08302-5_16,10.1007/978-3-319-21476-4_11}.
-%
-%
-%More in detail, our algorithm consists of two separate phases as follows:
-%\begin{enumerate}
-%    \item The first phase is a genetic algorithm where we run it for  20 generations with population size 50.
-%    \item Only when the genetic algorithm is done, we start with the local search, which takes 10 randomly chosen points in neighbourhood of each SUCCESS point. Note that this is a significant difference from related works where both GA and local search worked at the same time. We opted first to concentrate on exploration aspect -- GA (to explore various regions of the target) and only after that on exploitability aspect -- local search (to concentrate on more promising regions). Naturally, GA itself has also exploitability component that is especially manifested in the crossover operator but we also designed a custom made crossover operator that promotes exploration perspective.
-%\end{enumerate}
-%
-%%Fitness values are set according to the class: SUCCESS has the highest fitness (10), followed by the CHANGING,
-%%then RESET (5), and finally, NORMAL (2).
-%%CHANGING points' fitness depends on its underlying measurements: a mix of NORMAL and RESET points
-%%is somewhat better than all RESET or NORMAL point, but having SUCCESS points individual measurements
-%%moves the fitness close to an all SUCCESS point. We calculate the fitness of a CHANGING point in the following way:
-%%\begin{eqnarray}
-%%    fitness_{CHANGING} = 4 + 1.2*N\_SUCCESS +\\\nonumber 0.2*N\_NORMAL + 0.5*N\_RESET.
-%%\end{eqnarray}
-%%Here, factors 0.2 i 0.5 are chosen in analogy to the values for NORMAL and RESET (which are 2 and 5) while, the rest of the factors are selected for the scaling reasons.
-%%For example, 4 NORMAL and 1 RESET point give fitness 5.3, which is higher than the fitness of a RESET point (with all 5 RESET measurements). Similarly, 4 SUCCESS and 1 RESET point give fitness 9.3, which is lower than the fitness of SUCCESS point (with all 5 SUCCESS measurements).
-%
-%
-
-\section{Random search}
-For the baseline, a simple random search was performed: generate $N$ points,
-then proceed to scan said points.
 
 \section{Simple GA}
 First, a simple genetic algorithm was tried out, with a single elite individual.
+The initial population is generated by sampling uniformly at random within the
+parameter ranges.
+
+\subsection{Selection and crossover}
 Several selection algorithms were used: roulette-wheel selection, 3-tournament
 selection, and a variation on roulette-wheel selection with class awareness.
-This last one was inspired by the work in~\cite{Picek?}; its pseudocode is given below:
+This last one was inspired by the work in~\cite{GlitchItIfYouCan}; its
+pseudocode is given below:
 \begin{algorithm}
-    \algsetup{linenosize=\tiny}
     \small
-    \begin{algorithmic}[1]
+    \begin{algorithmic}
     \STATE $N \gets \text{length}(population)$
     \STATE $elite\ size \gets 1$
     \STATE $population_{new} \gets \varnothing$
@@ -845,25 +933,24 @@ parents. The tournaments are held until enough children have been produced.
 
 
 The "normal" crossover, however, is not a standard GA crossover, but different.
-Its pseudocode is given below in \ref{algo:custom_crossover}.
+Its pseudocode is given below in Algorithm \ref{algo:custom_crossover}.
 
 \begin{algorithm}
-    \algsetup{linenosize=\tiny}
     \small
-    \begin{algorithmic}[1]
-    \STATE Input: $parent_1, parent_2$, two chromosomes, each a list of FI parameters
-    \STATE Output: $child$, the resulting child
-    \FOR {each parameter $p$ in range($N - elite\ size$)}
-        \STATE $child.p \gets $ random value in interval $[parent_1.p, parent_2.p]$)
-    \ENDFOR
-    \RETURN $child$
+    \begin{algorithmic}
+        \STATE \textbf{Input:} $parent_1, parent_2$, two chromosomes, each a list of FI parameters
+        \STATE \textbf{Output:} $child$, the resulting child
+        \FOR {each parameter $p$ in range($N - elite\ size$)}
+            \STATE $child.p \gets $ random value in interval $[parent_1.p, parent_2.p]$)
+        \ENDFOR
+        \RETURN $child$
     \end{algorithmic}
     \caption{pseudocode for custom GA crossover}
     \label{algo:custom_crossover}
 \end{algorithm}
 
-For comparison, the standard single-cut crossover is given as algorithm \ref{algo:standard_crossover};
-the uniform crossover is not much different.
+For comparison, the standard single-cut crossover is given as Algorithm
+\ref{algo:standard_crossover}; the uniform crossover is not much different.
 In terms of behaviour, it would be best to consider the geometric interpretation.
 A vector of $k$ parameters can be viewed as a point in $k$-dimensional space.
 Two such points -- the parents -- define an axis-aligned $k$-dimensional hypercube.
@@ -882,9 +969,8 @@ from parent$_2$.
 
 
 \begin{algorithm}
-    \algsetup{linenosize=\tiny}
     \small
-    \begin{algorithmic}[1]
+    \begin{algorithmic}
         \STATE \textbf{Input:} $parent_1, parent_2$, two chromosomes, each a list of FI parameters
         \STATE \textbf{Output:} $child$, the resulting child
         \FOR {each parameter $p$ in range($N - elite\ size$)}
@@ -897,20 +983,19 @@ from parent$_2$.
 \end{algorithm}
 
 
-
+\subsection{Mutation}
 As for the mutation, its task is to ensure adequate exploration of the search
 space. Its exact form shouldn't make a great difference for the successfulness
 of the algorithm, as long as the final algorithm doesn't have any "blind spots",
 i.e. it doesn't leave some parts of the search space unreachable by the algorithm.
-The mutation I used for this algorithm is given below as algorithm \ref{algo:mutation}:
+The pseudocode of the mutation I used for this algorithm is given in Algorithm \ref{algo:mutation}.
 
-\begin{algorithm}[hb]
-    \algsetup{linenosize=\tiny}
+\begin{algorithm}[!htbp]
     \small
-    \begin{algorithmic}[1]
+    \begin{algorithmic}
         \STATE \textbf{Input:} $p_{MUT}$, the mutation probability
-        \STATE \textbf{Input:} $Q$, an upper limit on the step size
-        \STATE \textbf{Input:} $individual$, a solution to mutate
+        \STATE \textbf{\hphantom{Input:}} $Q$, an upper limit on the step size
+        \STATE \textbf{\hphantom{Input:}} $individual$, a solution to mutate
         \STATE \textbf{Output:} $individual'$, the mutant
         \STATE $individual' \gets \text{copy}(individual)$
         \FOR {each parameter $P$ except repetitions}
@@ -926,8 +1011,8 @@ The mutation I used for this algorithm is given below as algorithm \ref{algo:mut
 \end{algorithm}
 
 
-Its per-parameter nature makes the probability that at least \emph{some} mutation
-will happen larger. It also means that significant jumps will tend to be mostly
+Its per-parameter nature increases the probability that at least \emph{some}
+mutation will happen. It also means that significant jumps will tend to be mostly
 axis-aligned. The effect is somewhat similar to having a traditional crossover:
 many points on perpendicular lines, seemingly radiating from a hotspot; however
 the effect is weaker than with a single-cut crossover and a standard mutation
@@ -948,13 +1033,34 @@ for a picture of this.
     \end{subfigure}
     \caption{A comparison of the effects of a per-parameter mutation with custom
              crossover vs. all-parameter mutation with single-cut crossover. Both
-             runs have 50 generations of 50 units each.
+             runs have 50 generations of 50 units each, and use the same $p_{MUT}$.
     }
     \label{fig:weaker_effect}
 \end{figure*}
 
 
-\section{Extending the simple GA}
+\subsection{Fitness function}
+Fitness values are set according to the class: SUCCESS has the highest fitness
+(10), followed by CHANGING (variable), then RESET (5), and finally, NORMAL (2).
+CHANGING points' fitness depends on its underlying measurements: a mix of NORMAL
+and RESET points is somewhat better than all measurements being RESET or NORMAL
+points, and adding SUCCESSful individual measurements into the mix moves the
+fitness close to an all-SUCCESS point. With these requirements in mind, the
+following formula was chosen for the fitness of a CHANGING point:
+\begin{eqnarray}
+    fitness_{\text{CHANGING}} = 4 + 1.2*N_{\text{SUCCESS}} + 0.2*N_{\text{NORMAL}} + 0.5*N_{\text{RESET}} \nonumber
+\end{eqnarray}
+The factors 0.2 and 0.5 are chosen in analogy to the values for NORMAL
+and RESET (2 and 5, respectively); the other numbers are what they are to
+provide nice scaling.
+For example: 4 NORMAL and 1 RESET measurement give fitness 5.3, which is higher
+than the fitness of a RESET point (with all 5 RESET measurements). Similarly,
+4 SUCCESS and 1 RESET measurements give a fitness of 9.3, which is lower than
+the fitness of a SUCCESS point (with all 5 SUCCESS measurements).
+
+
+
+\section{Extending the simple GA}\label{sec:extending-GA}
 Recall, the early scans did not have a CHANGING class, and the landscape consisted
 of blobs of RESETs in a sea of NORMALs. So, a second phase was added: a series of
 binary searches to find and map out the border.
@@ -1015,94 +1121,380 @@ point clouds.
 \end{figure*}
 
 
-; in the general case where there are multiple blobs
-of unknown size, number, and positioning with respect to each other, this
-becomes
+In the general case where there are multiple blobs of unknown size, number,
+and positioning with respect to each other, the situation is more complicated.
+The problem of determining even how many blobs there are is nontrivial,
+especially with a rather limited amount of information available. (Remember,
+evaluations are expensive.) There is also the question of how to pick NORMAL
+points so that no other blobs lie on the connecting line. A way to solve all
+this would be to segment the search space in "BLOB" and "not BLOB" and so turn
+it into a geometric problem, but again, the algorithm has limited information
+at its disposal. The introduction of CHANGING points additionally muddles the
+notion of the exact class border and brings in more hyperparameters. 
 
-%\subsubsection{GA Phase}
-%Our algorithm begins with a genetic algorithm that runs for $N$ generations and has a population of $M$ individuals.
-%The initial population is selected uniformly at random within parameter ranges.
-%We aim to maximize the fitness value, which corresponds to having as much as possible SUCCESS points.
+While this problem might be an interesting one to solve, it runs the risk of
+becoming a significant piece of work by itself. With the given time constraints,
+it seemed logical not to pursue this approach for the time being.
+%I made the decision not to pursue this approach for the time being.
+%I made the decision to prioritize other approaches.
+
+
+\subsection{Some other variants}
+Certain other variants were tried out or under trial: a simple particle swarm
+optimization (PSO) algorithm, which turned out to be good at traversing the
+parameter space, but would take many more iterations than was reasonable given
+the expensive nature of point evaluation; one memetic algorithm, which interleaves
+generations of the GA with local modification of the point was also on trial, but
+its development was given low priority since it did not do too well in initial
+testing.
+
+\subsection{The variant used}
+For the final version of the evolutionary algorithm, a variation on the
+three-phase version was used; more specifically, the binary search phase
+was thrown out, and the hyperparameters were set to values meant to ensure
+a reasonable execution time of the algorithm -- the EA does not terminate
+after a fixed number of evaluations, but the execution time depends on the
+results it finds.
+
+Additionally, the probe tip was replaced with a smaller, more precise one;
+the result of this was that, on random scans, the share of faulty responses
+fell almost fivefold, and the share of unique faulty responses slightly increased.
+A similar effect occurred for the EA. This is expected: the probe affects not
+a single point, but an area. Hitting a smaller area means that points otherwise
+near, which would before have affected each other enough not to be distinguishable,
+now produce a different effect.
+
+
+\section{The results}\label{sec:results}
+This section presents the results of injecting faults into SHA3-512.
+
+%First, we investigate how well is GA able to find faults (i.e., force the algorithm
+%to output the wrong ciphertext) and then, whether such points can be used in order
+%to obtain the state of the algorithm.
 %
-%The first phase of GA is selection and we use roulette wheel selection.
-%There, the fitness function assigns a fitness to possible solutions or chromosomes.
-%This fitness level is used to associate a probability of selection with each
-%individual chromosome. Those individuals that have better fitness are also
-%proportionally more likely to be selected. We also use elitism where the
-%elite size equals 1. This means that the best individual cannot be replaced
-%by some other individual (e.g., mutated offspring). We also experimented with
-%3-tournament selection as used  in~\cite{10.1007/978-3-319-08302-5_16,10.1007/978-3-319-21476-4_11}
-%but we found it to be too restrictive, i.e. to promote too fast convergence
-%resulting in obtaining solutions from only a small part of the search space.
-%
-%\subsection{Binary search phase}
-%You'll recall that one of the initial assumptions was that the objective function
-%was not a "golf-course", i.e. that it has reasonably smooth transitions between
-%classes. With this, we would expect to find one or more 'blobs' of RESETs, wrapped
-%in a thin layer of JUSTRIGHTs and CHANGINGs, and the rest covered in NORMALs.
-%Since this border area is where we want to focus, we first need to more precisely
-%locate it and map it out.
-%
-%This phase is meant to do exactly that: for each such blob, pick a point somewhere
-%inside it (ideally its centroid), then randomly pick a number of NORMAL points
-%outside of it, and perform a binary search to detect where the line connecting
-%such a pair of points intersects the inter-class border.
-%%
-%%After the selection phase, we run crossover. Note, this version of a crossover promotes explorability and it enables GA to traverse large parts of the search space.
-%%The pseudocode for crossover is given below:
-%%\begin{algorithm}
-%%    \algsetup{linenosize=\tiny}
-%%    \small
-%%    \begin{algorithmic}[1]
-%%        \FOR {$all \ parameters$}
-%%        \STATE $child = uniformly \ random \ value \ in \ the \ range [parent1, parent 2]$
-%%        \ENDFOR
-%%    \end{algorithmic}
-%%\end{algorithm}
-%%
-%%Finally, the last step is the mutation operator that works as follows:
-%%\begin{algorithm}
-%%    \algsetup{linenosize=\tiny}
-%%    \small
-%%    \begin{algorithmic}[1]
-%%        \FOR {$param \ in \ [x, y, intensity]$}
-%%        \STATE $random = random \ value$
-%%        \IF{$random > p\_mutation$}
-%%        \STATE $r = uniform \ random \ from \ interval \ [-0.5, 0.5]$
-%%        \STATE $param = param + r$
-%%        \ENDIF
-%%        \ENDFOR
-%%        \STATE $random = random \ value$
-%%        \IF{$random > p\_mutation$}
-%%        \STATE $r = uniform \ random \ from \ interval \ [-0.5, 0.5]$
-%%        \STATE $offset <- offset + r * OFFSET_RANGE$
-%%        \ENDIF
-%%        \STATE $random = random \ value$
-%%        \IF{$random > p\_mutation$}
-%%        \STATE $repetitions = random \ integer \ from \ [1, 10]$
-%%        \ENDIF
-%%    \end{algorithmic}
-%%\end{algorithm}
-%%
-%%The mutation rate $p\_mutation$ is set to 5\%.
-%%In the case the parameter gets out of its ranges, it is clipped to the edges of its range.
-%%
-%%
-%%\subsubsection{Local Search Phase}
-%%After GA is done, we focus local search on the promising parts of the explored search space: the space around the intersection points (i.e. places where class values change), and the space around any faults we've already found.
-%%We define the neighbourhood of a point as a cube centred in it, with edge length
-%%equal to 0.02. By length of 0.02 in parameter space, we mean 2\% of the range of that parameter.
-%%Parameters $x, y$, and intensity are all within the range $[0,1]$.
-%%For offset, it's 2\% of OFFSET\_RANGE (which is OFFSET\_MAX - OFFSET\_MIN).
-%%To determine the distance of values, we use the Euclidean distance.
+%There, we use algebraic fault analysis (AFA), as described in~\cite{luo2018algebraic}.
+%AFA eliminates the need for analysis of fault propagation as is needed in differential
+%fault analysis; instead it uses a SAT solver to recover the state bits from a
+%(clean output, faulty output) pair.
+
+The duration of the EA is determined by the number of faults it finds.
+Five independent runs were conducted, with 2\,074, 2\,343, 3\,353, 3\,606,
+and 5\,132 points, respectively. Each individual run will be different due
+to the stochastic nature of the algorithm, as well as of the target's response.
+To obtain statistically meaningful results, the reported values are averages over all runs.
+On average, in each run there are 3\,301.6 points, of which:
+\begin{itemize}
+	\item 662.8  (18.9\%) NORMAL
+	\item 496.4  (15.0\%) RESET
+	\item 375.2  (11.4\%) CHANGING
+	\item 1\,807.2 (54.7\%) SUCCESS
+\end{itemize}
+
+This also means there are 16\,508 individual measurements on average.
+Out of these, 9\,700.4 (58.8\%) are faulty, and 3\,288.4 (19.9\%) are unique/distinct.
+Comparing this with random search with 3\,302 points, we get:
+\begin{itemize}
+	\item 2\,995.8 (90.7\%) NORMAL
+	\item 65.0 (2.0\%) RESET
+	\item 232.4 (7.0\%) CHANGING
+	\item 8.8 (0.3\%) SUCCESS
+\end{itemize}
+
+Again, this would represent 16\,510 individual measurements.
+Out of these, 228.2 (1.3\%) are faulty, and 160.8 (1.0\%) are unique/distinct.
+To conclude, when averaged over 5 runs, the EA algorithm gives 42.5 times more faulty
+measurements, and 20.5 times more distinct faulty ones.
+The somewhat lower share of distinct measurements for the EA algorithm
+can be explained by many SUCCESS points being close to each other due to the
+local search phase, thus being more likely to cause the same response.
+
+Tables~\ref{tab:500} until~\ref{tab:2000} contain results for the random search
+and evolutionary algorithms when considering the first 500, 1\,000, and 2\,000
+points, respectively. Note how the results for random search do not change
+significantly with more measurements. At the same time, we see that the EA is
+very successful already for the smallest case where with only 500 points,
+and as we add more points, the percentage of SUCCESS points increases.
+
+\begin{table}[!hbtp]
+	\small
+	\caption{500 points.}
+	\label{tab:500}
+	\centering
+	\begin{tabular}{ccc}
+		           &     Random     &       EA       \\ \toprule
+		  NORMAL   & 452.6 (90.5\%) & 315.2 (63.0\%) \\
+		  RESET    &  9.8 (2.0\%)   & 73.4 (14.7\%)  \\
+		 CHANGING  &  36.0 (7.2\%)  & 79.0 (15.8\%)  \\
+		 SUCCESS   &  1.6 (0.3\%)   &  32.4 (6.5\%)  \\ \midrule
+		 \#faults  &  33.4 (1.3\%)  & 260.8 (10.4\%) \\
+		\#distinct &  22.6 (0.9\%)  & 158.8 (6.3\%)  \\ \bottomrule
+	\end{tabular}
+\end{table}
+
+\begin{table}
+	\small
+	\caption{1\,000 points.}
+	\label{tab:1000}
+	\centering
+	\begin{tabular}{ccc}
+		           &     Random     &        EA         \\ \toprule
+		  NORMAL   & 910.4 (91.0\%) &  381.8 (38.2\%)   \\
+		  RESET    &  19.6 (2.0\%)  &  198.0 (19.8\%)   \\
+		 CHANGING  &  67.2 (6.7\%)  &  169.2 (16.9\%)   \\
+		 SUCCESS   &  2.8 (0.3\%)   &  251.0 (25.1\%)   \\ \midrule
+		 \#faults  &  58.8 (1.2\%)  & 1\,530.4 (30.6\%) \\
+		\#distinct &  40.4 (0.8\%)  &  956.6 (19.1\%)   \\ \bottomrule
+	\end{tabular}
+\end{table}
+
+\begin{table}
+	\small
+	\caption{2\,000 points.}
+	\label{tab:2000}
+	\centering
+	\begin{tabular}{ccc}
+		           &      Random       &        EA         \\ \toprule
+		  NORMAL   & 1\,814.6 (90.7\%) &  541.6 (27.1\%)   \\
+		  RESET    &   36.6 (1.8\%)    &  351.2 (17.6\%)   \\
+		 CHANGING  &   144.2 (7.2\%)   &  285.0 (14.2\%)   \\
+		 SUCCESS   &    4.6 (0.2\%)    &  822.2 (41.1\%)   \\ \midrule
+		 \#faults  &   130.6 (1.3\%)   & 4\,606.4 (46.0\%) \\
+		\#distinct &   93.4 (0.9\%)    & 2\,030.4 (20.3\%) \\ \bottomrule
+	\end{tabular}
+\end{table}
+
+
+Finally, the search space after random search or EA is shown in Figures~\ref{fig:random1}
+until~\ref{fig:ga3}. Figures~\ref{fig:random1} and~\ref{fig:ga1} give results
+projected down onto the XY-plane, i.e. by just the X and Y parameters. Figures~\ref{fig:random2}
+until~\ref{fig:ga3} depict depict intensity as a third parameter. For less clutter,
+versions without NORMAL points are also provided. The number of points in case
+of random search is always 3\,302; for the EA, the run with 3\,606 points is shown.
+Naturally, figures without the NORMAL points have less points.
+
+\begin{figure*}
+	\centering
+	\begin{subfigure}[b]{0.49\textwidth}
+		\includegraphics[width=0.98\linewidth]{images/plots/plot_random_2D.png}
+		\caption{Random search in 2D}
+		\label{fig:random1}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.49\textwidth}
+		\includegraphics[width=0.98\linewidth]{images/plots/plot_GA_3_2D.png}
+		\caption{GA and local search in 2D}
+		\label{fig:ga1}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.49\textwidth}
+		\centering
+		\includegraphics[width=0.98\linewidth]{images/plots/plot_random_3D_nonormal.png}
+		\caption{Random search without NORMAL points}
+		\label{fig:random2}
+	\end{subfigure}		
+	\begin{subfigure}[b]{0.49\textwidth}			
+		\centering
+		\includegraphics[width=0.98\linewidth]{images/plots/plot_GA_3_3D_nonormal.png}
+		\caption{GA and local search without NORMAL points}
+		\label{fig:ga2}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.49\textwidth}
+		\includegraphics[width=0.98\linewidth]{images/plots/plot_random_3D.png}
+		\caption{Random search}
+		\label{fig:random3}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.49\textwidth}
+		\includegraphics[width=0.98\linewidth]{images/plots/plot_GA_3_3D.png}
+		\caption{GA and local search}
+		\label{fig:ga3}
+	\end{subfigure}
+	\label{fig:figures}
+	\caption{Results for EA (GA with local search) and random search.}
+\end{figure*}
 
 
 
 
+\chapter{Attacking SHA-3}\label{ch:attacking_keccak}
+The ultimate goal of optimizing fault injection parameters is, of course, to
+do fault injection attacks. This chapter presents exactly that: a fault attack
+on SHA-3 (specifically, SHA3-512) in practice.
+
+\section{State of the art}
+To the best of my knowledge, no implementation of SHA-3 has yet been attacked in
+practice. The attacks which do exist are only simulated:~\cite{DFA_SHA-3_single-bit}
+show that differential fault analysis (DFA) can be used to recover the complete
+state in around 80 faults on average, if the attacker is able to inject single-bit
+faults in the input of the penultimate round (i.e. $\theta^{22}_i$), though they
+rely on brute-forcing the last few bits. According to~\cite{luo2017relaxed}
+(itself an extension of~\cite{luo2016shortSHA3}), this is around 500 single-bit
+random faults for the whole state. In \cite{luo2017relaxed}, the attack is
+generalized to a single-byte fault model, recovering the state in around 120
+random faults.
+
+Algebraic fault analysis (AFA) is more promising: in the progress
+through~\cite{luo2016shortSHA3},~\cite{luo2017relaxed}, and~\cite{luo2018algebraic},
+the authors manage to bring down the number of faults needed to recover the
+internal state with SHA3-512 down to under 10 with AFA and the 32-bit fault
+model.
+
+Besides being more efficient at recovering state, AFA has several advantages:
+\begin{itemize}
+ \item It does not require analysis of fault propagation through the algorithm,
+       making it much easier to abstract the internal details.
+ \item The fault model can be easily changed, by just changing the appropriate constraints.
+ \item Perhaps most importantly, it works for more relaxed fault models.
+\end{itemize}
 
 
+\section{Description of the attack}
+The attack used here is the one in~\cite{luo2018algebraic}.
+Again, like the other papers concerning fault injection into Keccak, it requires
+the attacker to be able to inject multiple faults in the input of round 22 of Keccak.
+These faults are allowed to affect up to 1 unit of the state, where units are sized
+8b, 16b, or 32b, depending on the fault model. This means that, for example, with
+a 32-bit fault model and the internal state $A[200]$, the fault model allows us
+to fault bytes $A[0]$ through $A[3]$ inclusive, but not bytes $A[1]$ through $A[4]$,
+since that crosses the line between two 32-bit units ($A[0]$ to $A[3]$ is the first
+such unit, $A[4]$ to $A[7]$ the second, etc.).
+
+The Keccak permutation, by virtue of being a permutation, is invertible.
+The same applies to its individual rounds. This means it is enough to recover
+the entire state at \emph{some} point in the execution. As in previous work, the
+chosen target state is $\chi^{22}_i$, the input to the nonlinear $\chi$
+transformation of round 22.
+For state recovery, we reused their C++ retrieval code (which uses CryptoMiniSAT
+for SAT solving).
+
+The general idea behind AFA on SHA-3/Keccak is simple: use a SAT solver to do
+the work for us: all we need is to provide appropriate constraints for it.
+We start with 1\,600 Boolean variables representing the state ($\theta^{22}_i$)
+and then provide constraints:
+\begin{description}
+    \item[Fault Model] -- what kind of a fault do we cause?\\
+	There's a separate set of (up to) 1\,600 Boolean variables ($\Delta\theta^{22}_i$)
+    representing the induced fault. $\theta^{22}_i \oplus \Delta\theta^{22}_i$ is the
+    faulted state, before propagating through the final two rounds of the algorithm.
+	Depending on what the fault model is, we add constraints such as ``exactly one bit
+    of $\Delta\theta^{22}_i$ is non-zero'', corresponding to a one-bit fault model, or
+    slightly more verbose ones for specifying things such as ``we faulted a word-aligned
+    32-bit word'', which would correspond to a 32-bit fault model in~\cite{luo2018algebraic}.
+
+    \item[Keccak] -- how does the (faulted) internal state propagate?\\
+	For Keccak, the internal transformations can be relatively simply encoded as Boolean expressions.
+	This implicitly tells the solver everything it needs to know about fault propagation, regardless of
+	the fault model constraints. There are two cases we consider:
+	\begin{equation*}
+	H= \iota^{23} \circ \chi \circ \pi \circ \rho \circ \theta \circ
+	\iota^{22} \circ \chi \circ \pi \circ \rho \circ \theta(\theta^{22}_i)
+	\end{equation*}
+	where $H$ is the correct hash output, and
+	\begin{equation*}
+	H'= \iota^{23} \circ \chi \circ \pi \circ \rho \circ \theta \circ
+	\iota^{22} \circ \chi \circ \pi \circ \rho \circ \theta(\theta^{22}_i \oplus \Delta\theta^{22}_i)
+	\end{equation*}
+	where $H'$ is the faulty hash output.
+
+    \item[Outputs] -- which are the concrete outputs?\\
+	We give the SAT solver the actual values of $H$ and $H'$.
+	After so constraining the SAT solver, we can let it find a solution -- an
+    internal state satisfying all the constraints. Once it finds the first such solution,
+    we ban this newly-found solution by adding it as an additional constraint, and let the
+    SAT solver find another one. This process is repeated until no new solutions can be found.
+	
+	The bits of the state which are the same in all solutions are the ones we can recover;
+    as for those which take different values in different solutions, their values are
+    not entailed by the combined constraints of the fault model, the algorithm, and
+    the outputs (i.e. the ``real'' constraints).
+	
+	Depending on the fault model and the version of SHA-3 (SHA3-512, SHA3-224, etc.),
+    these constraints may or may not be enough to recover part of the state. If this happens,
+    additional constraints can be introduced, such as using \emph{two} faulty hashes at a time,
+    $H'_1$ and $H'_2$, at a cost of having extra Boolean variables, making the problem harder
+    for the SAT solver (this is Method II from~\cite{luo2018algebraic}); or, if we can first
+    somehow recover part of the $\chi^{23}_i$ bits, we can use them to additionally constrain
+    the SAT solver (this is Method III from~\cite{luo2018algebraic}).
+\end{description}
+
+As for the choice of fault model and method: 32-bit fault model and Method III
+from~\cite{luo2018algebraic} was chosen. While the standard approach (Method I
+-- single faulty output, no extra $\chi^{23}_i$ bits) approach would be preferable,
+it is not possible according to the authors, at least when using two (and not more)
+faults at once. In principle, there is no limit on the number of faults we can use
+to constrain the SAT solver, but increasing this number quickly brings us where
+running the solver is \emph{very} hard, and obtaining another exploitable fault
+is cheaper than the extra SAT solving.
+The main reason for choosing the 32-bit fault model was, the fact that the target
+board has a 32-bit word size. This also being the most relaxed fault model means
+that any 8-bit or 16-bit faults do not go to waste, but are also exploited.
+
+%TODO: make copy of Table IV here?
+Table IV in~\cite{luo2018algebraic} neatly presents what is possible in
+reasonable time with the current state of the art in SAT solving: going from
+longer-output SHA-3 functions to shorter-output ones, less information is
+available to us, and state retrieval becomes progressively harder.
+For SHA3-512 in particular, Method I is still usable in the 8-bit and 16-bit
+fault models, requiring 45 and 23 faults on average to recover the state.
+The 32-bit fault model requires using at least Method II; this comes at a
+substantial cost in SAT solving time, but also a reduction in the number of
+faults needed: on average 7 faults for Method II, and 6 for Method III.
+Intuitively, this is because a fault can only leak so much information;
+so we need either more faults, or larger faults.
+
+With the 32-bit fault model, each fault usually allows the recovery of hundreds
+of bits, according to~\cite{luo2018algebraic}. With Method II the distribution
+is bimodal, with a part of faults allowing for $<$100 bits, and the rest around
+500 bits; with Method III the lower mode vanishes, and the upper one stays
+more-or-less where it is. We can conclude that, while the addition of extra
+$\chi^{23}_i$ bits does make a difference in the total number of faults required,
+it is not large. What is \emph{does} do, however, is drastically reduce the time
+needed for retrieval --- by an order of magnitude.
+
+This is the main reason for choosing Method III: it lets us approximate Method II,
+with a \emph{lot} less computing power.
+Since many more faults were generated for the purposes of this thesis than is
+necessary for a single successful attack, great efficiency was needed to check
+them all for exploitability.
+So, the following method was used:
+\begin{enumerate}
+    \item obtain the bottom 640 bits of Keccak state ($\chi^{23}_i(X,0,Z)$
+          and $\chi^{23}_i(X,0,Z)$), not by performing a separate recovery
+          phase, but by using \texttt{memcpy()}
+    \item generate a single faulty hash that is known to be the result of a
+          good fault (in the 32-bit fault model); this is $H'_1$
+    \item take a faulty hash generated by the real board; this is $H'_2$
+    \item add those hashes as constraints and run the SAT solver
+\end{enumerate}
+
+If the recovery is unsuccessful, this means that the candidate hash $H'_2$ was
+not an exploitable one. This method allows a $O($number of faults to test$)$
+time complexity, which is absolutely needed to check the thousands of faults
+obtained.
 
 
+\section{Results obtained}
+The exploitability of all distinct faulty hashes obtained by the evolutionary
+algorithm, as well as of all those obtained by the random scan, was tested.
+While the share of distinct/unique faulty hashes depends on the size of the scan,
+the exploitability of a faulty hash does not. For this reason, I calculated the
+share of exploitable individual faults on all the samples obtained (with the
+same hyperparameters).
+
+
+The results are as follows:
+the EA generated a total of 14\,979 distinct faults (out of 82\,540 individual
+measurements); 106 of these were exploitable 32-bit faults, for a share of 0.71\%.
+Random search generated 947 distinct faults (out of 100\,000 individual
+measurements); 110 of these were exploitable 32-bit faults, for a share of 11.61\%.
+When translated into exploitable faults per individual measurement, this gives
+about $1.41 \times 10^{-3}$ and $1.13 \times 10^{-3}$ for EA and random
+search, respectively -- an improvement of 24.6\%.
+
+Despite the fact that the EA is still significantly more successful than random search,
+we see that actually most of the faults obtained with the EA cannot be translated into
+exploitable faults. This results in a decrease between the performance difference
+of the EA and random search. Still, such results are not entirely unexpected:
+the EA was given no information on the exploitability of a fault that it could
+use to guide its search. This could be addressed by having its fitness function
+integrate an analysis of fault exploitability.
 
 
 
@@ -1132,6 +1524,7 @@ osnovicom.
 \kljucnerijeci{umetanje pogreške, evolucijski algoritam, SHA-3, algebarska analiza grešaka, optimizacija parametara}
 \end{sazetak}
 
+\pagebreak
 \begin{abstract}
 Cryptography underpins a large part of modern computer infrastructure, making
 its reliability very important. The security of embedded devices and their

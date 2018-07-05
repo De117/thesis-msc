@@ -41,10 +41,24 @@
   url    = {http://keccak.noekeon.org/Keccak-reference-3.0.pdf},
 }
 
-@misc{merkle-damgard_reference,
-    author = {TODO},
-    title  = {TODO},
-}
+@inproceedings{merkle-damgard_revisited,
+    author = {Coron, Jean-S{\'e}bastien and Dodis, Yevgeniy and Malinaud, C{\'e}cile and Puniya, Prashant},
+    title = {Merkle-Damg{\aa}rd Revisited: How to Construct a Hash Function},
+    booktitle = {Proceedings of the 25th Annual International Conference on Advances in Cryptology},
+    series = {CRYPTO'05},
+    year = {2005},
+    isbn = {3-540-28114-2, 978-3-540-28114-6},
+    location = {Santa Barbara, California},
+    pages = {430--448},
+    numpages = {19},
+    url = {http://dx.doi.org/10.1007/11535218_26},
+    doi = {10.1007/11535218_26},
+    acmid = {2153445},
+    publisher = {Springer-Verlag},
+    address = {Berlin, Heidelberg},
+} 
+
+
 
 @misc{SHAttered,
     author = {TODO},
@@ -58,9 +72,9 @@
 }
 
 @manual{RiscureVCGmanual,
-    author= {Riscure},
-    title = {VCGlitcher SDK 2.7 reference},
-    date  = {Apr 12, 2017},
+    author = {Riscure},
+    title  = {VCGlitcher SDK 2.7 reference},
+    date   = {Apr 12, 2017},
 }
 
 @misc{precise_probe_tips,
@@ -86,13 +100,123 @@
   organization={Springer}
 }
 
-@article{luo2018algebraic,
-  title={Algebraic Fault Analysis of {SHA-3} under Relaxed Fault Models},
-  author={Luo, Pei and Athanasiou, Konstantinos and Fei, Yunsi and Wahl, Thomas},
-  journal={IEEE Transactions on Information Forensics and Security},
-  year={2018},
-  publisher={IEEE}
+@inproceedings{luo2016shortSHA3,
+    author={P. Luo and Y. Fei and L. Zhang and A. A. Ding},
+    booktitle={2016 Workshop on Fault Diagnosis and Tolerance in Cryptography (FDTC)},
+    title={Differential Fault Analysis of {SHA3-224} and {SHA3-256}},
+    year={2016},
+    month={Aug},
+    volume={},
+    number={},
+    pages={4-15},
+    keywords={cryptography;digital signatures;SHA3-224;SHA3-256;crypto systems;differential fault analysis;fault models;fault propagation analysis;fault signatures;last-round ¿ operation;secret retrieval;security engine;single-byte fault models;Algorithm design and analysis;Analytical models;Ciphers;Fault diagnosis;Standards;Differential fault analysis;Keccak;SHA-3;Security},
+    doi={10.1109/FDTC.2016.17},
+    ISSN={},
 }
+
+@article{luo2017relaxed,
+    author   = {Luo, Pei and Fei, Yunsi and Zhang, Liwei and Ding, A. Adam},
+    title    = {Differential Fault Analysis of {SHA-3} Under Relaxed Fault Models},
+    journal  = {Journal of Hardware and Systems Security},
+    year     = {2017},
+    month    = {Jun},
+    day      = {01},
+    volume   = {1},
+    number   = {2},
+    pages    = {156--172},
+    abstract = {Keccak-based algorithms such as Secure Hash Algorithm-3 (SHA-3) will be widely used in cryptosystems, and evaluating their security against different kinds of attacks is vitally important. This paper presents an efficient differential fault analysis (DFA) method on all four modes of SHA-3 to recover an entire internal state, which leads to message recovery in the regular hashing mode and key retrieval in the message authentication code (MAC) mode. We adopt relaxed fault models in this paper, assuming the attacker can inject random single-byte faults into the penultimate round input of SHA-3. We also propose algorithms to find the lower bound on the number of fault injections needed to recover an entire internal state for the proposed attacks. Results show that on average, the attacker needs about 120 random faults to recover an internal state, while he needs 17 faults at best if he has control of the faults injected. The proposed attack method is further extended for systems with input messages longer than the bitrate.},
+    issn     = {2509-3436},
+    doi      = {10.1007/s41635-017-0011-4},
+    url      = {https://doi.org/10.1007/s41635-017-0011-4}
+}
+
+@article{luo2018algebraic,
+  title     = {Algebraic Fault Analysis of {SHA-3} under Relaxed Fault Models},
+  author    = {Luo, Pei and Athanasiou, Konstantinos and Fei, Yunsi and Wahl, Thomas},
+  journal   = {IEEE Transactions on Information Forensics and Security},
+  year      = {2018},
+  publisher = {IEEE}
+}
+
+@InProceedings{DFA_SHA-3_single-bit,
+    author="Bagheri, Nasour
+        and Ghaedi, Navid
+        and Sanadhya, Somitra Kumar",
+    editor="Biryukov, Alex
+        and Goyal, Vipul",
+    title="Differential Fault Analysis of {SHA-3}",
+    booktitle="Progress in Cryptology -- INDOCRYPT 2015",
+    year="2015",
+    publisher="Springer International Publishing",
+    address="Cham",
+    pages="253--269",
+    abstract="In this paper we present the first differential fault analysis (DFA) of SHA-3. This attack can recover the internal state of two versions of SHA-3 (namely, SHA3-512 and SHA3-384) and can be used to forge MAC's which are using these versions of SHA-3. Assuming that the attacker can inject a random single bit fault on the intermediate state of the hash computation, and given the output of the SHA-3 version for a correct message and 80 faulty messages, we can extract 1592 out of the 1600 bits of the compression function's internal state. To the best of our knowledge, this is the first public analysis of SHA-3 against DFA. Although our results do not compromise any security claim of SHA-3, it shows the feasibility of DFA on this scheme and possibly other Sponge based MACs and increases our understanding of SHA-3.",
+    isbn="978-3-319-26617-6"
+}
+
+
+
+@inproceedings{DFA_DES,
+	author    = "Eli Biham and Adi Shamir",
+	title     = "{Differential Fault Analysis of Secret Key Cryptosystems}",
+	booktitle = "CRYPTO",
+	series    = "LNCS",
+	publisher = "Springer",
+	volume    = 1294,
+	pages     = "513--525",
+	year      = 1997,
+	month     = "August",
+	note      = {{Santa Barbara, California, USA. DOI: 10.1007/BFb0052259}}
+}
+
+@inproceedings{DFA_AES,
+	author    = {Pierre Dusart and Gilles Letourneux and Olivier Vivolo},
+	title     = {{Differential Fault Analysis on A.E.S}},
+	booktitle = {ACNS},
+	year      = {2003},
+	pages     = {293-306},
+	ee        = {http://dx.doi.org/10.1007/978-3-540-45203-4_23},
+	bibsource = {DBLP, http://dblp.uni-trier.de}
+}
+
+@inproceedings{DFA_AES_single-fault,
+    author = {Tunstall, Michael and Mukhopadhyay, Debdeep},
+    year = {2009},
+    month = {01},
+    pages = {575},
+    title = {Differential Fault Analysis of the Advanced Encryption Standard Using a Single Fault},
+    volume = {2009},
+    booktitle = {IACR Cryptology ePrint Archive}
+}
+
+@inproceedings{DFA_SHA-1_compression,
+    author={L. Hemme and L. Hoffmann},
+    booktitle={2011 Workshop on Fault Diagnosis and Tolerance in Cryptography},
+    title={Differential Fault Analysis on the SHA1 Compression Function},
+    year={2011},
+    volume={},
+    number={},
+    pages={54-62},
+    keywords={cryptography;data compression;2011;DFA attack;SHA1 compression function;SHA1 hash function;SHACAL1 symmetric block cipher;differential fault analysis;Computational modeling;Context;Doped fiber amplifiers;Encryption;Equations;Mathematical model;Registers;DFA;SHA1 compression function;key derivation functions;keyed hash functions},
+    doi={10.1109/FDTC.2011.16},
+    ISSN={},
+    month={Sept},
+}
+
+@inproceedings{boneh-demillo-lipton_RSA,
+	author    = "Dan Boneh and Richard A. DeMillo and Richard J. Lipton",
+	title     = "{On the Importance of Checking Cryptographic Protocols for Faults}",
+	booktitle = "Proceedings of Eurocrypt'97",
+	publisher = "Springer",
+	series    = "LNCS",
+	year      = {1997},
+	month     = {May 11-15},
+	volume    = "1233",
+	pages     = "37--51",
+	note      = {{Konstanz, Germany. DOI: 10.1007/3-540-69053-0\_4}},
+	ee        = {http://dx.doi.org/10.1007/3-540-69053-0_4}
+}
+
 
 
 %
