@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Creator: fig2dev Version 3.2 Patchlevel 5d -->
+<!-- CreationDate: Wed Jan 26 21:54:26 2011 -->
+<!-- Magnification: 1.050 -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="3.7in" height="1.0in" viewBox="4094 4503 4389 1177">
+<g style="stroke-width:.025in; fill:none">
+<!-- Line -->
+<polygon points="4724,5669 5102,5669 5102,5291 4724,4913 4724,5669 " style="stroke:#000000;stroke-width:8; stroke-linejoin:miter; stroke-linecap:butt; "/>
+<!-- Line -->
+<polygon points="5480,5669 5858,5669 5858,5291 5480,4913 5480,5669 " style="stroke:#000000;stroke-width:8; stroke-linejoin:miter; stroke-linecap:butt; "/>
+<!-- Line -->
+<polyline points="5102,5480 5354,5480 " style="stroke:#000000;stroke-width:8; stroke-linejoin:miter; stroke-linecap:butt; "/>
+<!-- Arrowhead on XXXpoint 5102 5480 - 5496 5480-->
+<polygon points="5353 5511 5479 5480 5353 5448 5353 5511  " style="stroke:#000000;stroke-width:8;stroke-miterlimit:8; fill:#000000;"/>
+<!-- Line -->
+<polyline points="5858,5480 6299,5480 " style="stroke:#000000;stroke-width:8; stroke-linejoin:miter; stroke-linecap:butt; stroke-dasharray:41 41;"/>
+<!-- Arrowhead on XXXpoint 5858 5480 - 6440 5480-->
+<polygon points="6298 5511 6424 5480 6298 5448 6298 5511  " style="stroke:#000000;stroke-width:8;stroke-miterlimit:8; fill:#000000;"/>
+<!-- Line -->
+<polygon points="6425,5669 6803,5669 6803,5291 6425,4913 6425,5669 " style="stroke:#000000;stroke-width:8; stroke-linejoin:miter; stroke-linecap:butt; "/>
+<!-- Line -->
+<polygon points="7181,5669 7559,5669 7559,5291 7181,4913 7181,5669 " style="stroke:#000000;stroke-width:8; stroke-linejoin:miter; stroke-linecap:butt; "/>
+<!-- Line -->
+<polyline points="6803,5480 7055,5480 " style="stroke:#000000;stroke-width:8; stroke-linejoin:miter; stroke-linecap:butt; "/>
+<!-- Arrowhead on XXXpoint 6803 5480 - 7196 5480-->
+<polygon points="7054 5511 7180 5480 7054 5448 7054 5511  " style="stroke:#000000;stroke-width:8;stroke-miterlimit:8; fill:#000000;"/>
+<!-- Line -->
+<polyline points="4346,5480 4598,5480 " style="stroke:#000000;stroke-width:8; stroke-linejoin:miter; stroke-linecap:butt; "/>
+<!-- Arrowhead on XXXpoint 4346 5480 - 4740 5480-->
+<polygon points="4597 5511 4723 5480 4597 5448 4597 5511  " style="stroke:#000000;stroke-width:8;stroke-miterlimit:8; fill:#000000;"/>
+<!-- Line -->
+<polyline points="7559,5480 7811,5480 " style="stroke:#000000;stroke-width:8; stroke-linejoin:miter; stroke-linecap:butt; "/>
+<!-- Arrowhead on XXXpoint 7559 5480 - 7952 5480-->
+<polygon points="7809 5511 7935 5480 7809 5448 7809 5511  " style="stroke:#000000;stroke-width:8;stroke-miterlimit:8; fill:#000000;"/>
+<!-- Line -->
+<polyline points="4440,4724 4440,5102 4598,5102 " style="stroke:#000000;stroke-width:8; stroke-linejoin:miter; stroke-linecap:butt; "/>
+<!-- Arrowhead on XXXpoint 4440 5102 - 4740 5102-->
+<polygon points="4597 5133 4723 5102 4597 5070 4597 5133  " style="stroke:#000000;stroke-width:8;stroke-miterlimit:8; fill:#000000;"/>
+<!-- Line -->
+<polyline points="5196,4724 5196,5102 5354,5102 " style="stroke:#000000;stroke-width:8; stroke-linejoin:miter; stroke-linecap:butt; "/>
+<!-- Arrowhead on XXXpoint 5196 5102 - 5496 5102-->
+<polygon points="5353 5133 5479 5102 5353 5070 5353 5133  " style="stroke:#000000;stroke-width:8;stroke-miterlimit:8; fill:#000000;"/>
+<!-- Line -->
+<polyline points="6141,4724 6141,5102 6299,5102 " style="stroke:#000000;stroke-width:8; stroke-linejoin:miter; stroke-linecap:butt; "/>
+<!-- Arrowhead on XXXpoint 6141 5102 - 6440 5102-->
+<polygon points="6298 5133 6424 5102 6298 5070 6298 5133  " style="stroke:#000000;stroke-width:8;stroke-miterlimit:8; fill:#000000;"/>
+<!-- Line -->
+<polyline points="6897,4724 6897,5102 7055,5102 " style="stroke:#000000;stroke-width:8; stroke-linejoin:miter; stroke-linecap:butt; "/>
+<!-- Arrowhead on XXXpoint 6897 5102 - 7196 5102-->
+<polygon points="7054 5133 7180 5102 7054 5070 7054 5133  " style="stroke:#000000;stroke-width:8;stroke-miterlimit:8; fill:#000000;"/>
+<!-- Text -->
+<text xml:space="preserve" x="4866" y="5480" fill="#000000" font-family="Times" font-style="normal" font-weight="normal" font-size="152" text-anchor="start">f</text>
+<!-- Text -->
+<text xml:space="preserve" x="5622" y="5480" fill="#000000" font-family="Times" font-style="normal" font-weight="normal" font-size="152" text-anchor="start">f</text>
+<!-- Text -->
+<text xml:space="preserve" x="6566" y="5480" fill="#000000" font-family="Times" font-style="normal" font-weight="normal" font-size="152" text-anchor="start">f</text>
+<!-- Text -->
+<text xml:space="preserve" x="7322" y="5480" fill="#000000" font-family="Times" font-style="normal" font-weight="normal" font-size="152" text-anchor="start">f</text>
+<!-- Text -->
+<text xml:space="preserve" x="4110" y="5527" fill="#000000" font-family="Times" font-style="normal" font-weight="normal" font-size="152" text-anchor="start">IV</text>
+<!-- Text -->
+<text xml:space="preserve" x="7984" y="5527" fill="#000000" font-family="Times" font-style="normal" font-weight="normal" font-size="152" text-anchor="start">Hash</text>
+<!-- Text -->
+<text xml:space="preserve" x="4299" y="4677" fill="#000000" font-family="Times" font-style="normal" font-weight="normal" font-size="152" text-anchor="start">M1</text>
+<!-- Text -->
+<text xml:space="preserve" x="5055" y="4677" fill="#000000" font-family="Times" font-style="normal" font-weight="normal" font-size="152" text-anchor="start">M2</text>
+<!-- Text -->
+<text xml:space="preserve" x="5999" y="4677" fill="#000000" font-family="Times" font-style="normal" font-weight="normal" font-size="152" text-anchor="start">Mn</text>
+<!-- Text -->
+<text xml:space="preserve" x="6850" y="4677" fill="#000000" font-family="Times" font-style="normal" font-weight="normal" font-size="152" text-anchor="start">n</text>
+</g>
+</svg>

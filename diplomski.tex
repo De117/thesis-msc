@@ -312,22 +312,33 @@ The permutation is an iterated one, consisting of 24 rounds of $R$, where
 \end{equation*}
 
 is composed of five smaller phases:
+\begin{description}
+    \item[$\theta$] -- each bit $A_{(x,y,z)}$ is XOR-ed with the parities of
+        neighbouring columns $A_{(x-1,z)}$ and $A_{(x,z-1)}$
+    \item[$\rho$] -- a rotation along the z-axis, i.e. each lane (a 64-bit word)
+        gets cyclically shifted by a certain amount
+    \item[$\pi$] -- a permutation within each slice $A_{(z)}$
+    \item[$\chi$] -- a nonlinear operation, where a bit $A_{(x,y,z)}$ is flipped
+        if the two bits two its right form a ``01'' pattern, i.e. it is XOR-ed
+        with $\overline{A_{(x+1,y,z)}} \cdot A_{(x+2,y,z)}$
+    \item[$\iota$] -- an XOR with a round constant
+\end{description}
 
-$\begin{array}{rl}
-  \theta:& C_{(x)} = \sum\limits_{y=0}^4 A_{(x,y)}\\
-  &D_{(x)} = C_{(x-1)} + \text{rot}(C_{(x+1)},1)\\
-  &A_{(x,y)} = A_{(x,y)} + D_{(x)}\\
-  \pi \text{ and }\rho:& B_{(y,2x+3y)} = \text{rot}(A_{(x,y)}, r(x,y))\\
-  \chi:& A_{(x,y)} = B_{(x,y)} + (B_{(x+1,y)} \times B_{(x+2,y)} + 1)\\
-  \iota:& A_{(0,0)} = A_{(0,0)} + RC\\
-\end{array}$\\
+You may notice how the algorithm is able to do most of the work just by operations
+on the 64-bit lanes, and largely independent ones at that:
+$\theta$ works only in columns, $\rho$ only in lanes, $\chi$ only in rows, and
+$\pi$ and $\chi$ only in slices. In fact, their composition $\chi \circ \pi$
+merely rearranges the lanes, which implementations do ``for free'' by just
+swapping the lanes' indices. Only bitwise operations (AND and XOR) are used,
+making the Keccak permutation easy to implement in hardware.
+Note that bitwise~XOR and bitwise~AND are occasionally referred to in literature
+as addition and multiplication in $GF(2)$, the Galois field of order 2.
 
-All operations are carried out in $GF(2)$, i.e. addition is bitwise XOR and
-multiplication is bitwise AND. rot$(W,i)$ is a bitwise cyclic shift operation.
-The constants $r(x,y)$ are rotation offsets. $RC$ is the round constant.
-For more details, see~\cite{keccak_reference}.
+For more details on Keccak, see~\cite{keccak_reference}.
 
-%TODO: explain the phases properly
+In the rest of the thesis, I will refer to e.g. input of into $\pi$ in round 14
+and output of $\theta$ in the final round, as $\pi^{14}_i$ and $\theta^{23}_o$,
+respectively.
 
 
 \section{Algebraic fault analysis}
@@ -1393,7 +1404,7 @@ is bimodal, with a part of faults allowing for $<$100 bits, and the rest around
 500 bits; with Method III the lower mode vanishes, and the upper one stays
 more-or-less where it is. We can conclude that, while the addition of extra
 $\chi^{23}_i$ bits does make a difference in the total number of faults required,
-it is not large. What is \emph{does} do, however, is drastically reduce the time
+it is not large. What it \emph{does} do, however, is drastically reduce the time
 needed for retrieval --- by an order of magnitude.
 
 This is the main reason for choosing Method III: it lets us approximate Method II,
