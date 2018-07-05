@@ -1498,12 +1498,45 @@ integrate an analysis of fault exploitability.
 
 
 
-
-
-
-
 \chapter{Conclusion}\label{ch:conclusion}
-Conclusion goes here, as well as future work.
+In the end, the developed algorithm did not turn out to be really complex,
+partly due to the short development schedule; however, even though fault injection
+is widely used, the amount of work on its parameter optimization is surprisingly
+small, and plenty of work still needs to be done. It is therefore not particularly
+surprising that the developed algorithm ended up being substantially better than
+the baseline: over 20 times more distinct faults per individual measurement than
+random search; and almost 25\% more exploitable faults compared to random search.
+
+To my knowledge, there is presently only one other method for EMFI parameter
+optimization, the one given in~\cite{madau2017fault}, and described in section~\ref{sec:related_work}.
+However, they consider RESET points to also be \emph{faults} worth preserving,
+meaning we cannot do a direct comparison -- their task appears to be an easier one.
+But if we look at their best case -- keeping 80\% of the faults while rejecting
+75\% of the chip surface -- this is an increase in fault concentration by a
+factor of merely 3.2, for a price of a full 2-dimensional grid scan.
+Considering that the EA developed here likely runs in a comparable amount of time,
+it is evident that their EMFISC approach is, as it stands, inferior.
+
+Since there are few works looking at FI parameter optimization, there is a
+number of potentially interesting research topics. The most obvious one is
+certainly adding exploitability analysis to the fitness function -- filtering
+out the non-exploitable SUCCESS points would be a great improvement to this
+algorithm. I expect that making it run in real-time on a single workstation
+would not be easy. One less obvious follow-up topic would be: what is a
+neighbourhood? A way to figure out the effective lowest resolution would
+potentially make the search space considerably smaller.
+
+And, of course, this algorithm should be tested on other boards as well.
+As it turns out, there are good reasons why this particular board is named
+the \emph{Piñata}: one, it is fairly susceptible to being exploited by various
+means; this makes it an excellent practice target for fault injection.
+Two, like the real thing, it is meant to take a beating: millions of glitches,
+day in, day out. This second reason is why it was chosen -- nobody wants a dead
+board in the middle of a five-day scan -- but the first reason might be the cause
+for what seems an unusually high number of faults in total.
+
+
+
 
 \bibliography{literatura}
 \bibliographystyle{fer}
