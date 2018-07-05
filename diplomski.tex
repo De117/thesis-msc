@@ -224,7 +224,7 @@ In~\cite{GlitchItIfYouCan}, the authors use several different methods to the
 problem of parameter optimization for supply voltage (VCC) glitching. They work
 with 3 parameters: glitch voltage, glitch length, and time offset. They reduce
 the dimensionality of the problem by splitting the search in two stages,
-effectively solving a "2.5-dimensional" problem, so to say. In the first stage,
+effectively solving a ``2.5-dimensional'' problem, so to say. In the first stage,
 they look for the best (glitch voltage, glitch length) combination, i.e. the
 most promising shape of the glitch. All parameters not explicitly specified
  -- in this case, time offset and the number of glitch repetitions -- are
@@ -277,8 +277,8 @@ shows the general concept: the algorithm operates on blocks of data of size $B$.
 There exists an underlying function $f$, called the \emph{compression function},
 which takes $2B$ bits of input and produces $B$ bits of output. $f$ is essentially
 a small hash function itself, but one with fixed-length input and output, which
-the Merkle-Damgård construction uses to build a "big" hash function, with
-arbitrary-length input. It can be proven that the "big" hash function will
+the Merkle-Damgård construction uses to build a ``big'' hash function, with
+arbitrary-length input. It can be proven that the ``big'' hash function will
 be collision-resistant if and only if the compression function is
 collision-resistant~\cite{merkle-damgard_security}.
 
@@ -467,7 +467,7 @@ inspired by biological evolutionary processes and phenomena such as mutation,
 recombination, and natural selection.
 In a way, they simulate the natural process of evolution: a solution
 (i.e. point in the solution space) becomes an individual in the population.
-These "individuals" are then valued using a \emph{fitness function}; better
+These ``individuals'' are then valued using a \emph{fitness function}; better
 solutions are fitter individuals, with a higher chance of surviving and procreating.
 Thus the objective function (which we are optimizing) gets mapped to the fitness function
 and, over a number of generations, the evolutionary process takes care of the optimization.
@@ -510,7 +510,7 @@ Usually, however, offspring generation consists of two phases:
 \end{itemize}
 It is not necessary for the entire population to be replaced in a generation.
 A portion of the fittest individuals surviving across generations is called
-\emph{elitism}; this could also be regarded as "cloning" the old solutions into
+\emph{elitism}; this could also be regarded as ``cloning'' the old solutions into
 the next generation, so it fits in the outline given above.
 
 This three-phase algorithm, when we represent the solution as a string of numbers,
@@ -613,7 +613,7 @@ C API are used.\footnotemark
 }
 
 Besides the serial interface, the board has a number of I/O pins which it can
-toggle to high or low; the only one here used is the "trigger" pin. This pin is
+toggle to high or low; the only one here used is the ``trigger'' pin. This pin is
 used to signal to the VCGlitcher device that the cryptographic operation is in
 progress; this is used as a reference point for injecting the fault. While this
 slightly detracts from the realism of the attack, it greatly simplifies testing.
@@ -665,14 +665,14 @@ Similarly, the shape and angle of the probe tip is not varied, since changing
 those cannot be easily automated.
 
 Most parameters are within $[0,1]$, but we can map the other ones to that
-interval as well, by taking its "percentage": a parameter with range $[A,B]$,
+interval as well, by taking its ``percentage'': a parameter with range $[A,B]$,
 a value $x \in [A,B]$ is mapped to $y = \frac{x-A}{A-B}$, which is in $[0,1]$.
 With everything mapped to $[0,1]^5$, we can now define any length or distance
 to be the standard Euclidean distance in this image of the parameter space.
 
 
 \section{Search Space Size}\label{sec:search_space}
-One might wonder: why use a heuristic at all? What's wrong with a "dumb"
+One might wonder: why use a heuristic at all? What's wrong with a ``dumb''
 approach to parameter optimization? Let's consider the straightforward
 approach: an exhaustive search.
 
@@ -702,7 +702,7 @@ assumptions that would be broken by running it for another device or cryptograph
 algorithm. However, I do make some assumptions:
 the objective function is not a golf-course. In a golf-course function, the
 gradient in the fitness landscape doesn't lead to optimal solutions, which tend
-to "pop out of nowhere", all of a sudden. Given the nature of EM glitching, the
+to ``pop out of nowhere'', all of a sudden. Given the nature of EM glitching, the
 transition between different kinds of behaviour should be reasonably gentle; the
 reasoning behind it is that a very weak EM pulse will not affect the target at all,
 and we will observe normal behaviour. Conversely, a very strong EM pulse will
@@ -722,7 +722,7 @@ but Piñata running EdDSA (also taken from WolfSSL). There exists a difference
 between their respective search spaces: the parameters and the parameter ranges
 are largely the same (there is a difference in the offset range, since EdDSA
 takes $\approx$\SI{30}{\milli\second} to run, SHA3-512 only $\approx$\SI{0.4}{\milli\second}),
-but underlying calculation and the "look" of the parameter space is different.
+but underlying calculation and the ``look'' of the parameter space is different.
 In EdDSA, the vast majority of the time is spent performing a scalar
 multiplication on the Ed25519 curve, and the parameter space has one big
 blob of RESETs, the rest being filled by NORMALs. For SHA3-512, all the
@@ -800,7 +800,7 @@ a lot of measurements.
 
 Usually, the objective function guides the optimization algorithm towards better
 solutions, and the algorithm ends when it finds what it considers to be the best
-one. Here, we don't want just a single "best" solution since not every fault
+one. Here, we don't want just a single ``best'' solution since not every fault
 that's found will also be exploitable, and there are situations where more than
 one are required; instead the aim is to obtain multiple good solutions.
 
@@ -922,17 +922,17 @@ border area, and concentrate there.
 Of the selections, roulette-wheel selection was chosen for further testing.
 As it turns out, the class-aware selection did find a part of the class border
 area very fast, and converge there; however this was only a very small part of
-the border, and the algorithm is not able to "recover" from this convergence,
+the border, and the algorithm is not able to ``recover'' from this convergence,
 but it will instead stay on the same small area, nor mapping out the rest of
 the space.
 3-tournament selection was not chosen, since it appeared to be too aggressive,
 i.e. it exerted overly high selection pressure for the problem at hand.
-It works by randomly choosing individuals three at a time, in "tournaments".
+It works by randomly choosing individuals three at a time, in ``tournaments''.
 The lowest-ranking of the three is discarded, and the other two are used as
 parents. The tournaments are held until enough children have been produced.
 
 
-The "normal" crossover, however, is not a standard GA crossover, but different.
+The ``normal'' crossover, however, is not a standard GA crossover, but different.
 Its pseudocode is given below in Algorithm \ref{algo:custom_crossover}.
 
 \begin{algorithm}
@@ -954,7 +954,7 @@ For comparison, the standard single-cut crossover is given as Algorithm
 In terms of behaviour, it would be best to consider the geometric interpretation.
 A vector of $k$ parameters can be viewed as a point in $k$-dimensional space.
 Two such points -- the parents -- define an axis-aligned $k$-dimensional hypercube.
-The "normal" crossover calculates the child as a random point from within
+The ``normal'' crossover calculates the child as a random point from within
 that hypercube; the standard crossovers, in contrast, calculate the child as
 one of the corners of the hypercube. If the child has $l$ parameters of parent$_1$,
 it will be at a Hamming\footnotemark distance of $k-l$ from parent$_1$, and $l$
@@ -986,7 +986,7 @@ from parent$_2$.
 \subsection{Mutation}
 As for the mutation, its task is to ensure adequate exploration of the search
 space. Its exact form shouldn't make a great difference for the successfulness
-of the algorithm, as long as the final algorithm doesn't have any "blind spots",
+of the algorithm, as long as the final algorithm doesn't have any ``blind spots'',
 i.e. it doesn't leave some parts of the search space unreachable by the algorithm.
 The pseudocode of the mutation I used for this algorithm is given in Algorithm \ref{algo:mutation}.
 
@@ -1094,13 +1094,13 @@ local searches make sense: they are necessary to exploit the little good
 points there are.
 
 Introducing local search also opens up the question of what should be considered
-"close", i.e. how big is the neighbourhood of a point? There seems to be no good
+``close'', i.e. how big is the neighbourhood of a point? There seems to be no good
 answer to this question, or at least not one that could be convincingly justified
 over other ones. So, I used values that seemed about right, tweaking them a bit
 and looking at the results, as well as visually estimating by the size of
-landscape features. For lack of a better answer to "what is a neighbourhood of
-a point?", it is "an axis-aligned cube centered on the point, with edge length
-CUBE\_SIZE $=0.1$".
+landscape features. For lack of a better answer to ``what is a neighbourhood of
+a point?'', it is ``an axis-aligned cube centered on the point, with edge length
+CUBE\_SIZE $=0.1$''.
 
 Figure \ref{fig:three-phase-example} shows one such three-phase scan. The GA
 phase used 20 generations of 15 units, with $p_{MUT}=0.01$. The second-phase
@@ -1127,7 +1127,7 @@ The problem of determining even how many blobs there are is nontrivial,
 especially with a rather limited amount of information available. (Remember,
 evaluations are expensive.) There is also the question of how to pick NORMAL
 points so that no other blobs lie on the connecting line. A way to solve all
-this would be to segment the search space in "BLOB" and "not BLOB" and so turn
+this would be to segment the search space in ``BLOB'' and ``not BLOB'' and so turn
 it into a geometric problem, but again, the algorithm has limited information
 at its disposal. The introduction of CHANGING points additionally muddles the
 notion of the exact class border and brings in more hyperparameters. 
