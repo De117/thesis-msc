@@ -555,7 +555,7 @@ or part of the search space.
 For the purposes of this thesis, random search is the baseline search algorithm.
 
 
-\section{Experimental Setup}\label{sec:setup}
+\section{Experimental setup}\label{sec:setup}
 For the target, a Cortex-M4 STM32F407IG (Riscure ``Pi\~{n}ata'') board was used,
 running a C implementation of SHA-3. This implementation was taken from the WolfSSL
 library~\cite{WolfSSL}, so as to have a real-world algorithm instead of a toy one.
@@ -630,7 +630,7 @@ With everything mapped to $[0,1]^5$, we can now define any length or distance
 to be the standard Euclidean distance in this image of the parameter space.
 
 
-\section{Search Space Size}\label{sec:search_space}
+\section{Search space size}\label{sec:search_space}
 One might wonder: why use a heuristic at all? What's wrong with a ``dumb''
 approach to parameter optimization? Let's consider the straightforward
 approach: an exhaustive search.
@@ -759,7 +759,7 @@ one are required; instead the aim is to obtain multiple good solutions.
 
 
 
-\section{Practical Considerations}\label{sec:practical_considerations}
+\section{Practical considerations}\label{sec:practical_considerations}
 Commonly, optimization algorithms (and nature-inspired metaheuristics in
 particular) rely on a large number of iterations. Another assumption usually
 made is that the evaluation of possible solution points is uniform. Here,
@@ -1092,7 +1092,7 @@ it seemed logical not to pursue this approach for the time being.
 %I made the decision to prioritize other approaches.
 
 
-\subsection{Some other variants}
+\subsection{Alternative variants of the algorithm}
 Certain other variants were tried out or under trial: a simple particle swarm
 optimization (PSO) algorithm, which turned out to be good at traversing the
 parameter space, but would take many more iterations than was reasonable given
@@ -1101,7 +1101,7 @@ generations of the GA with local modification of the point was also on trial, bu
 its development was given low priority since it did not do too well in initial
 testing.
 
-\subsection{The variant used}
+\subsection{Final version}
 For the final version of the evolutionary algorithm, a variation on the
 three-phase version was used; more specifically, the binary search phase
 was thrown out, and the hyperparameters were set to values meant to ensure
@@ -1135,7 +1135,7 @@ of its shape.
 
 
 
-\section{The results}\label{sec:results}
+\section{Parameter optimization results}
 This section presents the results of injecting faults into SHA3-512.
 
 The duration of the EA is determined by the number of faults it finds.
@@ -1306,7 +1306,7 @@ Besides being more efficient at recovering state, AFA has several advantages:
 \end{itemize}
 
 
-\section{Description of the attack}
+\section{Attack description}
 The attack used here is the one in~\cite{luo2018algebraic}.
 Again, like the other papers concerning fault injection into Keccak, it requires
 the attacker to be able to inject multiple faults in the input of round 22 of Keccak.
@@ -1431,7 +1431,7 @@ time complexity, which is absolutely needed to check the thousands of faults
 obtained.
 
 
-\section{Results obtained}
+\section{Algebraic fault analysis results}
 The exploitability of all distinct faulty hashes obtained by the evolutionary
 algorithm, as well as of all those obtained by the random scan, was tested.
 While the share of distinct/unique faulty hashes depends on the size of the scan,
