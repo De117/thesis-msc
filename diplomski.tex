@@ -182,8 +182,7 @@ offset dimension.
 
 The methods are compared at the first stage -- random search, FastBoxing and
 Adaptive zoom\&bound algorithms, and a genetic algorithm. While Adaptive
-zoom\&bound comes out as the best strategy of these, the genetic algorithm
-shows some promise. 
+zoom\&bound comes out as the best strategy of these, the GA shows some promise. 
 %This approach is a ``smart'' search in 2D with a grid search in 1D.
 
 That work is extended in~\cite{FI_memetic} where the authors use a combination of
@@ -204,7 +203,7 @@ first. These are:
 \begin{enumerate}
     \item genetic algorithms, used here for optimization
     \item fault injection (FI) in general
-    \item the SHA-3 hash function, which is exploited here using algebraic fault analysis
+    \item SHA-3 hash function, which is exploited here using algebraic fault analysis
     \item algebraic fault analysis (AFA), which is used in conducting a real attack
 \end{enumerate}
 
@@ -1228,10 +1227,9 @@ and as we add more points, the percentage of SUCCESS points increases.
 Finally, the search space after random search or EA is shown in Figures~\ref{fig:random1}
 until~\ref{fig:ga3}. Figures~\ref{fig:random1} and~\ref{fig:ga1} give results
 projected down onto the XY-plane, i.e. by just the X and Y parameters. Figures~\ref{fig:random2}
-until~\ref{fig:ga3} depict depict intensity as a third parameter. For less clutter,
-versions without NORMAL points are also provided. The number of points in case
-of random search is always 3\,302; for the EA, the run with 3\,606 points is shown.
-Naturally, figures without the NORMAL points have less points.
+until~\ref{fig:ga3} depict intensity as a third parameter. For less clutter,
+versions without NORMAL points are also provided. The random scan shown here
+has a total of 3\,302 points; for the EA, the run with 3\,606 points is shown.
 
 \begin{figure*}
 	\centering
